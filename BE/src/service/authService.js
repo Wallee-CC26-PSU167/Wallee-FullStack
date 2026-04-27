@@ -18,7 +18,7 @@ const register = async ({ name, email, password }) => {
 
   // insert user
   const result = await pool.query(
-    `INSERT INTO users (name, email, password)
+    `INSERT INTO users (name, email, password_hash)
      VALUES ($1, $2, $3)
      RETURNING id, name, email`,
     [name, email, hashedPassword]
@@ -39,7 +39,7 @@ const login = async ({ email, password }) => {
     throw new Error("User not found");
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password_hash);
 
   if (!isMatch) {
     throw new Error("Wrong password");
