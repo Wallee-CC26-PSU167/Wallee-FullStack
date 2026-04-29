@@ -1,16 +1,18 @@
 import express from 'express';
 import controller from '../controller/transactionController.js';
 import auth from '../middleware/authMiddleware.js';
+import schema from "../validation/transactionValidation.js";
+import validate from "../middleware/validate.js";
 
 const router = express.Router();
 // semua route butuh token
 router.use(auth);
 
 router.get('/',           controller.getAll);
-router.get('/summary',    controller.getSummary);   // ⚠️ harus sebelum /:id
-router.get('/:id',        controller.getOne);
-router.post('/',          controller.create);
-router.put('/:id',        controller.update);
+router.get('/summary',    validate(schema.summary), controller.getSummary);   // ⚠️ harus sebelum /:id
+router.get('/:id',        validate(schema.getID), controller.getOne);
+router.post('/',          validate(schema.create), controller.create);
+router.put('/:id',        validate(schema.update), controller.update);
 router.delete('/:id',     controller.remove);
 
 export default router;
