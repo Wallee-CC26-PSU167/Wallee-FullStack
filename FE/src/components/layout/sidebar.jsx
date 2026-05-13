@@ -12,7 +12,7 @@ import WalleeLogo from "/Users/macbookpro2019/Documents/Dicoding/wallee/FE/src/a
 
 const NAV_ITEMS = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard"    },
-  { to: "/transactions", icon: ArrowLeftRight,     label: "Transaksi" },
+  { to: "/transaksi", icon: ArrowLeftRight,     label: "Transaksi" },
   { to: "/analytics",      icon: BarChart3,       label: "Analitik"      },
   { to: "/aichat",      icon: MessageSquare,        label: "AI Assistant"   },
   { to: "/settings",     icon: Settings,        label: "Pengaturan"     },
