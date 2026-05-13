@@ -7,6 +7,7 @@ import Login2 from "./pages/login2";
 import Aichat from "./pages/chat";
 import Transaksi from "./pages/transaksi";
 import Analitik from "./pages/analitik";
+import Setting from "./pages/setting";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/aichat" element={<Aichat />} />
           <Route path="/transaksi" element={<Transaksi />} />
           <Route path="/analytics" element={<Analitik />} />
+          <Route path="/settings" element={<Setting />} />
         </Route>
       </Routes>
     </BrowserRouter>

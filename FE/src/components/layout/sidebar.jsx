@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
   BarChart3,
   MessageSquare,
+  Plus,
 } from "lucide-react";
 import WalleeLogo from "/Users/macbookpro2019/Documents/Dicoding/wallee/FE/src/assets/Logo_Full.png";
 
@@ -26,6 +27,16 @@ const Sidebar = () => {
         <img src={WalleeLogo} alt="Wallee Logo" />
       </div>
 
+      <div className="px-4 mb-2 mt-4">
+        <NavLink
+          to="/add-transaction"
+          className="bg-[linear-gradient(135deg,#3975E6,#9E4CC6)] flex items-center justify-center gap-2 text-white rounded-xl py-3 px-4 text-sm font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
+        >
+          <Plus className="w-4 h-4" />
+          Tambah Transaksi
+        </NavLink>
+      </div>
+
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-1">
           {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
@@ -36,7 +47,7 @@ const Sidebar = () => {
                   [
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-purple-100 text-purple-700"       
+                      ? "bg-purple-50 text-purple-600"       
                       : "text-gray-500 hover:bg-gray-100 hover:text-gray-900", 
                   ].join(" ")
                 }
