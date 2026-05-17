@@ -8,6 +8,7 @@ import Aichat from "./pages/chat";
 import Transaksi from "./pages/transaksi";
 import Analitik from "./pages/analitik";
 import Setting from "./pages/setting";
+import AddTransaction from "./pages/addTransaction";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/transaksi" element={<Transaksi />} />
           <Route path="/analytics" element={<Analitik />} />
           <Route path="/settings" element={<Setting />} />
+          <Route path="/add-transaction" element={<AddTransaction />} />
         </Route>
       </Routes>
     </BrowserRouter>
