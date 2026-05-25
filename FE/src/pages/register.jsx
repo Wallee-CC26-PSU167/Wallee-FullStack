@@ -6,6 +6,7 @@ import WalleeLogo from "/Users/macbookpro2019/Documents/Dicoding/wallee/FE/src/a
 import Card from "../components/ui/card";
 import ButtonGrad from "../components/ui/buttongrad";
 import InputFields from "../components/ui/input";
+import { registerUser } from "../services/auth_service";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -38,14 +39,10 @@ export default function Register() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length) return;
-
     setLoading(true);
     setApiErr("");
     try {
-      // Ganti dengan API call kamu
-      // const res = await axios.post("/auth/register", form);
-      // localStorage.setItem("token", res.data.token);
-      await new Promise((r) => setTimeout(r, 1500)); // simulasi
+      const response = await registerUser(form);
       navigate("/dashboard");
     } catch (err) {
       setApiErr(err.message ?? "Registrasi gagal. Coba lagi.");
