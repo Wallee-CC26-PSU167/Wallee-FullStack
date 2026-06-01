@@ -1,0 +1,166 @@
+import db from "../config/db.js";
+import redis from "../config/redis.js";
+
+const getNotifications = async (userId) => {
+  const cacheKey = `notifications:${userId}`;
+  const cached = await redis.get(cacheKey);
+
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  const result = await db.query(
+    `
+    SELECT
+      n.id AS notification_id,
+      n.transaction_id,
+      n.merchant,
+      n.amount,
+      n.transaction_date,
+      n.transaction_time,
+      n.item_count,
+      n.created_at,
+
+      ni.id AS item_id,
+      ni.external_anomaly_id,
+      ni.anomaly_type,
+      ni.message,
+      ni.is_dismissed,
+      ni.metadata
+
+    FROM notifications n
+
+    JOIN notification_items ni
+      ON ni.notification_id = n.id
+
+    ORDER BY n.created_at DESC
+    `
+  );
+  await redis.set(
+    cacheKey,
+    JSON.stringify(result.rows),
+    "EX",
+    60 * 60 * 24
+  );
+  const groupedNotifications = {};
+    for (const row of result.rows) {
+    if (!groupedNotifications[row.notification_id]) {
+        groupedNotifications[row.notification_id] = {
+            id: row.transaction_id,
+            merchant: row.merchant,
+            amount: Number(row.amount),
+            date:
+                row.transaction_date
+                ?.toISOString()
+                ?.split("T")[0],
+            time: row.transaction_time,
+            item_count: row.item_count,
+            anomalies: []
+            };
+    }
+     groupedNotifications[row.notification_id]
+        .anomalies
+        .push({
+            id: row.external_anomaly_id,
+            type: row.anomaly_type,
+            message: row.message,
+            detail: row.metadata,
+            dismissed: row.is_dismissed
+        });
+    }
+    const formattedNotifications =
+    Object.values(groupedNotifications);
+    await redis.set(
+        cacheKey,
+        JSON.stringify(formattedNotifications),
+        "EX",
+        60 * 60 * 24
+        );
+    return formattedNotifications;
+};
+
+const saveNotification = async (aiResult, userId) => {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    const notificationResult = await client.query(
+      `
+      INSERT INTO notifications (
+        transaction_id,
+        merchant,
+        amount,
+        transaction_date,
+        transaction_time,
+        item_count
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+      `,
+      [
+        aiResult.id,
+        aiResult.merchant,
+        aiResult.amount,
+        aiResult.date,
+        aiResult.time,
+        aiResult.item_count
+      ]
+    );
+
+    const notification = notificationResult.rows[0];
+    for (const anomaly of aiResult.anomalies) {
+      await client.query(
+        `
+        INSERT INTO notification_items (
+          notification_id,
+          external_anomaly_id,
+          anomaly_type,
+          message,
+          is_dismissed,
+          metadata
+        )
+        VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+        [
+          notification.id,
+          anomaly.id,
+          anomaly.type,
+          anomaly.message,
+          anomaly.dismissed || false,
+          JSON.stringify(anomaly.detail)
+        ]
+      );
+    }
+    await client.query("COMMIT");
+
+    await redis.del(`notifications:${userId}`);
+    return notification;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+const dismissNotification = async (
+  itemId,
+  userId
+) => {
+  await db.query(
+    `
+    UPDATE notification_items
+    SET is_dismissed = true
+    WHERE id = $1
+    `,
+    [itemId]
+  );
+
+  await redis.del(`notifications:${userId}`);
+  return true;
+};
+
+export default {
+  getNotifications,
+  saveNotification,
+  dismissNotification
+};
