@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LineChart, Sparkles, PieChart, Bot, Star, Receipt } from 'lucide-react';
 import maskotWallee from '../assets/Maskot Wallee.png';
@@ -12,7 +14,7 @@ export function HomeSection() {
 
       <section className="px-6 md:px-12 lg:px-24 max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 mb-24">
-          <div className="w-full lg:w-7/12 xl:w-1/2 flex-shrink-0 z-20">
+          <div className="w-full lg:w-7/12 xl:w-1/2 flex-shrink-0 z-20" data-aos="fade-right">
             {/* Typography */}
             <h1 className="text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold text-black mb-8 tracking-tight leading-[1.1] font-serif">
               <span className="whitespace-nowrap">Smart Money</span><br />
@@ -32,13 +34,13 @@ export function HomeSection() {
               </Link>
             </div>
           </div>
-          <div className="w-full lg:w-5/12 xl:w-1/2 flex justify-center lg:justify-end mt-12 lg:mt-0 relative">
+          <div className="w-full lg:w-5/12 xl:w-1/2 flex justify-center lg:justify-end mt-12 lg:mt-0 relative" data-aos="fade-left" data-aos-delay="200">
             <img src={maskotWallee} alt="Maskot Wallee" className="w-[110%] md:w-full max-w-[600px] lg:max-w-none object-contain drop-shadow-2xl hover:-translate-y-2 scale-110 lg:scale-150 xl:scale-[1.35] lg:translate-x-16 xl:translate-x-20 transition-all duration-500 z-10" />
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up" data-aos-delay="300">
           {/* Stat 1 */}
           <div className="bg-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-4xl font-bold text-slate-900 mb-3 font-serif tracking-tight">1 dari 3</h3>
@@ -72,7 +74,7 @@ export function HomeSection() {
 export function Feature() {
   return (
     <section id="feature" className="bg-white text-left pt-25 pb-24 px-4 w-full">
-      <div className="max-w-5xl mx-auto text-left mb-12">
+      <div className="max-w-5xl mx-auto text-left mb-12" data-aos="fade-up">
         <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">
           FITUR
         </span>
@@ -83,9 +85,9 @@ export function Feature() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
         {/* Feature 1 */}
-        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
-          <div className="text-blue-500 mb-6 w-16 h-16 flex items-center justify-center">
-            <LineChart size={48} strokeWidth={1.5} />
+        <div data-aos="fade-up" data-aos-delay="100" className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
+          <div className="bg-orange-50 text-orange-500 rounded-full mb-6 w-16 h-16 flex items-center justify-center">
+            <LineChart size={32} strokeWidth={2} />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">Prediksi Keuangan</h3>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -94,9 +96,9 @@ export function Feature() {
         </div>
 
         {/* Feature 2 */}
-        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
-          <div className="text-blue-500 mb-6 w-16 h-16 flex items-center justify-center">
-            <Bot size={48} strokeWidth={1.5} />
+        <div data-aos="fade-up" data-aos-delay="200" className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
+          <div className="bg-emerald-50 text-emerald-600 rounded-full mb-6 w-16 h-16 flex items-center justify-center">
+            <Bot size={32} strokeWidth={2} />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">Deteksi Anomali</h3>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -105,9 +107,9 @@ export function Feature() {
         </div>
 
         {/* Feature 3 */}
-        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
-          <div className="text-blue-500 mb-6 w-16 h-16 flex items-center justify-center">
-            <PieChart size={48} strokeWidth={1.5} />
+        <div data-aos="fade-up" data-aos-delay="300" className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
+          <div className="bg-purple-50 text-purple-600 rounded-full mb-6 w-16 h-16 flex items-center justify-center">
+            <PieChart size={32} strokeWidth={2} />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">Laporan Otomatis</h3>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -116,9 +118,9 @@ export function Feature() {
         </div>
 
         {/* Feature 4 */}
-        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
-          <div className="text-blue-500 mb-6 w-16 h-16 flex items-center justify-center">
-            <Receipt size={48} strokeWidth={1.5} />
+        <div data-aos="fade-up" data-aos-delay="400" className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start text-left">
+          <div className="bg-blue-50 text-blue-600 rounded-full mb-6 w-16 h-16 flex items-center justify-center">
+            <Receipt size={32} strokeWidth={2} />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">Kelola Transaksi</h3>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -138,19 +140,19 @@ const testimonials = [
     isGradient: true
   },
   {
-    name: "Budi Santoso",
+    name: "Dewi Anggraini",
     img: "https://i.pravatar.cc/150?img=5",
     text: "Saya hanya perlu memotret setelah makan bisnis dan pengeluaran langsung tercatat. Sangat efisien!",
     isGradient: false
   },
   {
-    name: "Citra Lestari",
+    name: "Joko Widodo",
     img: "https://i.pravatar.cc/150?img=3",
     text: "Laporan otomatisnya sangat membantuku memahami ke mana saja uangku pergi bulan ini.",
     isGradient: true
   },
   {
-    name: "Dewi Anggraini",
+    name: "Budi Santoso",
     img: "https://i.pravatar.cc/150?img=8",
     text: "Prediksi keuangannya akurat! Sekarang aku punya tabungan darurat berkat rekomendasi Wallee.",
     isGradient: false
@@ -186,7 +188,7 @@ export function Testimoni() {
           }
         `}
       </style>
-      <div className="px-4">
+      <div className="px-4" data-aos="fade-up">
         <h2 className="text-3xl font-bold text-slate-900 mb-4">Apa Kata Mereka?</h2>
         <p className="text-gray-500 mb-12 max-w-xl mx-auto">
           Kendalikan keuangan Anda dengan Wallee. Lacak pengeluaran dan menabung lebih cerdas dalam satu aplikasi praktis.
@@ -195,7 +197,7 @@ export function Testimoni() {
 
       <div className="relative w-full flex flex-col gap-8">
         {/* Row 1: Kanan ke Kiri */}
-        <div className="animate-marquee">
+        <div className="animate-marquee" data-aos="fade-in" data-aos-delay="200">
           {/* Block 1 */}
           <div className="flex gap-8 pr-8">
             {extendedTestimonials.map((t, idx) => (
@@ -259,7 +261,7 @@ export function Testimoni() {
         </div>
 
         {/* Row 2: Kiri ke Kanan */}
-        <div className="animate-marquee-reverse">
+        <div className="animate-marquee-reverse" data-aos="fade-in" data-aos-delay="400">
           {/* Block 1 */}
           <div className="flex gap-8 pr-8">
             {[...extendedTestimonials].reverse().map((t, idx) => (
@@ -328,7 +330,7 @@ export function Testimoni() {
 
 export function AboutSection() {
   return (
-    <section id="about" className="w-full bg-white py-24">
+    <section id="about" data-aos="fade-up" className="w-full bg-white py-24">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 text-center">
         <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">
           TANTANGAN FINANSIAL
@@ -396,6 +398,13 @@ export function AboutSection() {
 }
 
 export default function Home() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+    });
+  }, []);
+
   return (
     <>
       <Header />
