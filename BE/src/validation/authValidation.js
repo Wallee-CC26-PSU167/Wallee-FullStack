@@ -24,4 +24,18 @@ const login = Joi.object({
     .required(),
 });
 
-export default { register, login };
+const forgotPassword = Joi.object({
+  email: Joi.string()
+    .email()
+    .required(),
+});
+
+const resetPassword = Joi.object({
+  id: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
+  token: Joi.string().required(),
+  newPassword: Joi.string()
+    .min(6)
+    .required(),
+});
+
+export default { register, login, forgotPassword, resetPassword };
