@@ -3,7 +3,7 @@ import { User, Bell, Palette, LogOut, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '../components/ui/Badge';
 import SelectFields from '../components/ui/select';
-import Button from '../components/ui/button';
+import Button from '../components/ui/Button';
 import { toast, Toaster } from "sonner";
 import ButtonGrad from '../components/ui/buttongrad';
 import Card from '../components/ui/card';
