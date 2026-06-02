@@ -56,24 +56,6 @@ const create = async (req, res) => {
   }
 };
 
-const update = async (req, res) => {
-  try {
-    const trx = await service.update(req.params.id, req.user.id, req.body);
-    return res.status(200).json({
-      success: true,
-      message: "Data Transaksi sukses diupdate",
-      data: trx
-    });
-  } catch (err) {
-    const status = err.message === 'Data Transaksi tidak ditemukan' ? 404 : 400;
-    return res.status(status).json({
-      success: false,
-      message: err.message,
-      data: null
-    });
-  }
-};
-
 const remove = async (req, res) => {
   try {
     await service.remove(req.params.id, req.user.id);
@@ -111,5 +93,51 @@ const getSummary = async (req, res) => {
     });
   }
 };
+const getAnalyticsTransactions = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await service.getAnalyticsTransactions(
+        req.user.id
+      );
 
-export default { getAll, getOne, create, update, remove, getSummary };
+    return res.status(200).json({
+      success: true,
+      message:
+        "Data Analitik Transaksi sukses diambil",
+      data: result,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+      data: null,
+    });
+  }
+};
+const getLatestUnreadNotification =
+  async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const notification =
+      await notificationService
+        .getLatestUnreadNotification(
+          userId
+        );
+
+    return res.status(200).json({
+      success: true,
+      data: notification
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export default { getAll, getOne, create, remove, getSummary, getAnalyticsTransactions, getLatestUnreadNotification };

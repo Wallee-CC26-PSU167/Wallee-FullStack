@@ -13,5 +13,4 @@ redisClient.on("connect", () => {
 });
 
 await redisClient.connect();
-
 export default redisClient;

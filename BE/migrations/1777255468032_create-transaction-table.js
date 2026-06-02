@@ -1,20 +1,33 @@
 export const up = (pgm) => {
-  pgm.createTable('transactions', {
-    id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
-    user_id: { type: 'uuid', notNull: true, references: 'users(id)', onDelete: 'CASCADE' },
-    category_id: { type: 'uuid', references: 'categories(id)', onDelete: 'SET NULL' },
-    amount: { type: 'numeric(15,2)', notNull: true },
-    type: { type: 'transaction_type', notNull: true },
-    description: { type: 'text' },
-    date: { type: 'date', notNull: true },
-    created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-    updated_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-    note: { type: 'text' },
-  });
-
-  // Index biar query by user cepet
-  pgm.createIndex('transactions', 'user_id');
-  pgm.createIndex('transactions', 'date');
+  pgm.createTable("transaksi", {
+    id_transaksi: {
+      type: "bigserial",
+      primaryKey: true,
+    },
+    id_user: {
+      type: "varchar(10)",
+      notNull: true,
+      references: "users(id_user)",
+      onDelete: "CASCADE",
+    },
+    total_harga: {
+      type: "bigint",
+      notNull: true,
+    },
+    tipe: {
+      type: "varchar(50)",
+      notNull: true,
+    },
+    merchant: {
+      type: "varchar(100)",
+      notNull: true,
+    },
+    transaction_date: {
+      type: "date",
+    },
+    transaction_time: {
+      type: "time",
+    }});
 };
 
 export const down = (pgm) => {

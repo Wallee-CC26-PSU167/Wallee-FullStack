@@ -3,16 +3,16 @@ import db from "../config/db.js";
 
 const getProfile = async (userId) => {
   const result = await db.query(
-    'SELECT id, name, email, created_at FROM users WHERE id = $1',
+    'SELECT id_user, nama, email, created_at FROM users WHERE id_user = $1',
     [userId]
   );
   if (!result.rows.length) throw new Error('User not found');
   return result.rows[0];
 };
 
-const updateProfile = async (userId, { name, email, currentPassword, newPassword }) => {
+const updateProfile = async (userId, { nama, email, currentPassword, newPassword }) => {
   // Ambil data user dulu
-  const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+  const userResult = await db.query('SELECT * FROM users WHERE id_user = $1', [userId]);
   const user = userResult.rows[0];
   if (!user) throw new Error('User not found');
 
@@ -26,7 +26,7 @@ const updateProfile = async (userId, { name, email, currentPassword, newPassword
   // Kalau ganti email, cek apakah email sudah dipakai user lain
   if (email && email !== user.email) {
     const existing = await db.query(
-      'SELECT id FROM users WHERE email = $1 AND id != $2',
+      'SELECT id_user FROM users WHERE email = $1 AND id_user != $2',
       [email, userId]
     );
     if (existing.rows.length) throw new Error('Email already in use');
@@ -37,7 +37,7 @@ const updateProfile = async (userId, { name, email, currentPassword, newPassword
   const params = [];
   let i = 1;
 
-  if (name) { setClauses.push(`name = $${i++}`); params.push(name); }
+  if (nama) { setClauses.push(`nama = $${i++}`); params.push(nama); }
   if (email) { setClauses.push(`email = $${i++}`); params.push(email); }
   if (newPassword) {
     const hash = await bcrypt.hash(newPassword, 10);
@@ -50,8 +50,8 @@ const updateProfile = async (userId, { name, email, currentPassword, newPassword
   params.push(userId);
   const result = await db.query(
     `UPDATE users SET ${setClauses.join(', ')}
-     WHERE id = $${i}
-     RETURNING id, name, email, created_at`,
+     WHERE id_user = $${i}
+     RETURNING id_user, nama, email, created_at`,
     params
   );
 

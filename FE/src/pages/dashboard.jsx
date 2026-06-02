@@ -12,34 +12,141 @@ import Card from '../components/ui/card';
 import ButtonGrad from '../components/ui/buttongrad';
 import Badge from '../components/ui/Badge';
 import { getTransactions } from '../services/transactionService';
+import { getNotifications, getLatestNotification } from '../services/notificationService';
+function BellDropdown({ onClose }) {
+  const [notifications, setNotifications] = useState([]);
 
-// ── Dummy notifikasi AI ───────────────────────────────────────
-// Ganti dengan API call ke backend saat sudah siap
-// Urutkan dari yang terbaru (index 0 = paling baru)
-const DUMMY_NOTIFICATIONS = [
-  {
-    id: 1,
-    message: "Pengeluaran untuk kategori Makanan bulan ini sudah mencapai 80% dari rata-rata bulananmu. Pertimbangkan untuk memasak di rumah beberapa hari ke depan.",
-    createdAt: new Date(),               // terbaru — ini yang ditampilkan
-    isRead: false,
-  },
-  {
-    id: 2,
-    message: "Selamat! Kamu berhasil menabung 20% lebih banyak dibanding bulan lalu. Pertahankan kebiasaan ini!",
-    createdAt: new Date(Date.now() - 86400000),
-    isRead: true,
-  },
-  {
-    id: 3,
-    message: "Tagihan listrik bulan ini lebih tinggi 15% dari biasanya. Cek penggunaan perangkat elektronikmu.",
-    createdAt: new Date(Date.now() - 172800000),
-    isRead: true,
-  },
-];
+  // Fetch ulang saat dropdown dibuka
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data =
+          await getNotifications();
+        setNotifications(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchNotifications();
+  }, []);
 
-// ── AI Notification Banner ────────────────────────────────────
-function AINotificationBanner({ notification, onDismiss }) {
-  if (!notification) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0,  scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+      transition={{ duration: 0.2 }}
+      className="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-[0_8px_32px_rgba(15,24,41,0.14)] border border-gray-100 overflow-hidden z-50"
+    >
+      {/* Header dropdown */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-gray-800">Notifikasi Anomali</span>
+          {/* Badge jumlah unread */}
+          {notifications.some(n => n.anomalies.some(a => !a.dismissed)) && (
+            <span
+              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white"
+              style={{ background: "linear-gradient(135deg,#3975E6,#9E4CC6)" }}
+            >
+              {notifications.filter(n => n.anomalies.some(a => !a.dismissed)).length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* List notifikasi */}
+      <div className="divide-y divide-gray-100">
+        {notifications.map((trx) => {
+          const hasUnread  = trx.anomalies.some(a => !a.dismissed);
+          const totalCount = trx.anomalies.length;
+          const preview    = trx.anomalies[0]?.message ?? "";
+
+          return (
+            <div
+              key={trx.id}
+              className="flex items-start gap-3 px-4 py-3 transition-colors"
+              style={{
+                background: hasUnread
+                  ? "linear-gradient(135deg, rgba(57,117,230,0.06), rgba(158,76,198,0.06))"
+                  : "#ffffff",
+              }}
+            >
+              {/* Dot indikator */}
+              <div className="mt-1.5 flex-shrink-0">
+                {hasUnread
+                  ? <span className="w-2 h-2 rounded-full block bg-blue-500" />
+                  : <span className="w-2 h-2 rounded-full block bg-gray-200" />
+                }
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {/* Merchant + badge jumlah anomali */}
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {trx.merchant}
+                  </p>
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style={hasUnread
+                      ? { background: "rgba(57,117,230,0.12)", color: "#3975E6" }
+                      : { background: "#F3F4F6", color: "#9CA3AF" }
+                    }
+                  >
+                    {totalCount} anomali
+                  </span>
+                </div>
+
+                {/* Amount + tanggal */}
+                <p className="text-[11px] text-gray-400 mb-1">
+                  {new Intl.NumberFormat('id-ID', {
+                    style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+                  }).format(trx.amount)}
+                  {" · "}
+                  {trx.date} {trx.time}
+                </p>
+
+                {/* Preview pesan anomali pertama */}
+                <p
+                  className="text-xs leading-relaxed truncate"
+                  style={{ color: hasUnread ? "#374151" : "#9CA3AF" }}
+                >
+                  ⚠️ {preview}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer — link ke transaksi */}
+      <Link
+        to="/transaksi"
+        onClick={onClose}
+        className="flex items-center justify-center gap-1 px-4 py-3 text-xs font-semibold border-t border-gray-100 hover:bg-gray-50 transition-colors"
+        style={{ color: "#3975E6" }}
+      >
+        Lihat semua di Transaksi
+        <ChevronRight className="w-3 h-3" />
+      </Link>
+    </motion.div>
+  );
+}
+function AINotificationBanner({ transaction }) {
+  if (!transaction) return null;
+
+  // Hanya tampilkan anomali yang belum dismissed
+  const unreadAnomalies =
+  transaction.anomalies.filter(
+    a => !a.dismissed
+  );
+  if (unreadAnomalies.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -54,7 +161,7 @@ function AINotificationBanner({ notification, onDismiss }) {
           border: "1px solid rgba(57,117,230,0.2)",
         }}
       >
-        {/* Glow accent */}
+        {/* Glow accent kiri */}
         <div
           className="absolute top-0 left-0 w-1 h-full rounded-l-2xl"
           style={{ background: "linear-gradient(180deg,#3975E6,#9E4CC6)" }}
@@ -71,45 +178,67 @@ function AINotificationBanner({ notification, onDismiss }) {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
+
+            {/* Label + badge jumlah anomali */}
             <div className="flex items-center gap-2 mb-1">
               <span
                 className="text-xs font-bold uppercase tracking-wider"
                 style={{ color: "#3975E6" }}
               >
-                AI Insight
+                Anomali Terdeteksi
               </span>
-              {!notification.isRead && (
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: "#9E4CC6" }}
-                />
-              )}
-              <span className="text-[10px] text-gray-400 ml-auto flex-shrink-0">
-                {format(new Date(notification.createdAt), 'd MMM, HH:mm', { locale: idLocale })}
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white"
+                style={{ background: "linear-gradient(135deg,#3975E6,#9E4CC6)" }}
+              >
+                {unreadAnomalies.length}
               </span>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {notification.message}
+
+            {/* Info transaksi */}
+            <p className="text-sm font-semibold text-gray-800 mb-0.5">
+              {transaction.merchant}
+            </p>
+            <p className="text-xs text-gray-400 mb-3">
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(transaction.amount)}
+              {" · "}
+              {transaction.date} {transaction.time}
             </p>
 
-            {/* CTA ke AI Chat */}
+            {/* List anomali */}
+            <div className="flex flex-col gap-2">
+              {unreadAnomalies.map((anomaly) => (
+                <div
+                  key={anomaly.id}
+                  className="flex items-start gap-2 bg-white/60 rounded-xl px-3 py-2 border border-white/80"
+                >
+                  <span className="text-base mt-0.5">⚠️</span>
+                  <div className="flex-1 min-w-0">
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wider"
+                      style={{ color: "#9E4CC6" }}
+                    >
+                      {anomaly.type}
+                    </span>
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      {anomaly.message}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA ke halaman transaksi */}
             <Link
-              to="/aichat"
-              className="inline-flex items-center gap-1 mt-2 text-xs font-semibold"
+              to="/transaksi"
+              className="inline-flex items-center gap-1 mt-3 text-xs font-semibold"
               style={{ color: "#3975E6" }}
             >
-              Tanya AI lebih lanjut
+              Lihat detail di Transaksi
               <ChevronRight className="w-3 h-3" />
             </Link>
-          </div>
 
-          {/* Dismiss button */}
-          <button
-            onClick={onDismiss}
-            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
@@ -121,21 +250,51 @@ export default function Dashboard() {
   const [transactions,   setTransactions]   = useState([]);
   const [balanceHidden,  setBalanceHidden]  = useState(false);
   const [notification,   setNotification]   = useState(null);
-
-  // Ambil notifikasi terbaru saat mount
+  const [anomaly, setAnomaly] = useState(null);
+  const [bellOpen, setBellOpen] =
+    useState(false);
+  const [notifications, setNotifications] =
+    useState([]);
+  // Badge unread
+  const hasUnreadAnomaly =
+    notifications.some(
+      n => n.anomalies.some(
+        a => !a.dismissed
+      )
+    );
+  // Ambil notification saat dashboard mount
   useEffect(() => {
-    // Ganti dengan: const res = await api.get("/notifications/latest")
-    // dan setNotification(res.data)
-    const latest = DUMMY_NOTIFICATIONS[0]; // index 0 = paling baru
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNotification(latest);
+    const fetchNotifications = async () => {
+      try {
+        const data =
+          await getNotifications();
+        // Simpan semua notif
+        setNotifications(data);
+        // Cari latest unread anomaly
+        const latestUnread =
+          data.find(notification =>
+            notification.anomalies.some(
+              anomaly => !anomaly.dismissed
+            )
+          );
+
+        setAnomaly(latestUnread || null);
+      } catch (error) {
+        console.error(
+          "Failed fetch notifications:",
+          error
+        );
+      }
+    };
+    fetchNotifications();
   }, []);
 
   const fetchTransactions = async () => {
     try {
       const data = await getTransactions();
+      console.log("Fetched transactions:", data);
       setTimeout(() => {
-        setTransactions(data.data.transactions);
+        setTransactions(data.data);
       }, 0);
     } catch (error) {
       console.log(error);
@@ -166,7 +325,8 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between relative overflow-hidden"
+        className="flex items-center justify-between relative overflow-visible"
+        style={{ position: "relative", zIndex: 50 }}
       >
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[hsl(225,20%,12%)]">Dashboard</h1>
@@ -174,13 +334,26 @@ export default function Dashboard() {
         </div>
 
         {/* Bell icon — badge merah jika ada notif belum dibaca */}
+        {/* Bell section — ganti div relative yang sudah ada */}
         <div className="relative">
-          <button className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
+          <button
+            onClick={() => setBellOpen(prev => !prev)}
+            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors shadow-sm"
+          >
             <Bell className="w-5 h-5" />
           </button>
-          {notification && !notification.isRead && (
-            <span className="absolute -top-1 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+
+          {/* Badge merah */}
+          {hasUnreadAnomaly && (
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white pointer-events-none" />
           )}
+
+          {/* Dropdown */}
+          <AnimatePresence>
+            {bellOpen && (
+              <BellDropdown onClose={() => setBellOpen(false)} />
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
@@ -223,10 +396,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* 3. AI NOTIFICATION BANNER */}
-      <AINotificationBanner
-        notification={notification}
-        onDismiss={() => setNotification(null)}
-      />
+      <AINotificationBanner transaction={anomaly} />
 
       {/* 4. STATS GRID */}
       <div className="grid grid-cols-2 gap-3">

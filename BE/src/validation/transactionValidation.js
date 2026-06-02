@@ -1,59 +1,69 @@
 import Joi from 'joi';
 
 const create = Joi.object({
-  amount: Joi.number()
-    .positive()
-    .required(),
-
   type: Joi.string()
-    .valid('income', 'expense')
+    .valid("income", "expense")
     .required(),
-
-  date: Joi.string()
-    .isoDate()
-    .required(),
-
-  category_id: Joi.string()
-    .uuid()
-    .optional()
-    .allow(null),
 
   description: Joi.string()
-    .max(255)
-    .optional()
-    .allow('')
-    .allow(null),
+    .required(),
 
+  date: Joi.date()
+    .required(),
+
+  time: Joi.string()
+    .required(),
+  category_id: Joi.when("type", {
+        is: "income",
+
+        then: Joi.number()
+          .integer()
+          .required(),
+
+        otherwise: Joi.optional(),
+      }),
   note: Joi.string()
-    .optional()
-    .allow('')
-    .allow(null),
+    .allow("")
+    .optional(),
+
+  amount: Joi.when("type", {
+    is: "income",
+
+    then: Joi.number()
+      .positive()
+      .required(),
+
+    otherwise: Joi.optional(),
+  }),
+
+  items: Joi.when("type", {
+    is: "expense",
+
+    then: Joi.array()
+      .items(
+        Joi.object({
+          name: Joi.string()
+            .required(),
+
+          qty: Joi.number()
+            .integer()
+            .min(1)
+            .required(),
+
+          price: Joi.number()
+            .positive()
+            .required(),
+
+          category_id: Joi.number()
+            .integer()
+            .required(),
+        })
+      )
+      .min(1)
+      .required(),
+    otherwise: Joi.optional(),
+  }),
 });
-
-const update = Joi.object({
-  amount: Joi.number()
-    .positive()
-    .optional(),
-
-  type: Joi.string()
-    .valid('income', 'expense')
-    .optional(),
-
-  date: Joi.string()
-    .isoDate()
-    .optional(),
-
-  category_id: Joi.string()
-    .uuid()
-    .optional()
-    .allow(null),
-
-  description: Joi.string()
-    .max(255)
-    .optional()
-    .allow('')
-    .allow(null),
-}).min(1);
 
 const query = Joi.object({
   page: Joi.number()
@@ -67,8 +77,10 @@ const query = Joi.object({
     .max(100)
     .default(10),
 
-  type: Joi.string()
-    .valid("income", "expense")
+  startDate: Joi.date()
+    .optional(),
+
+  endDate: Joi.date()
     .optional(),
 });
 
@@ -86,9 +98,9 @@ const summary = Joi.object({
     .optional(),
 });
 const getID = Joi.object({
-  id: Joi.string()
-    .uuid()
+  id: Joi.number()
+    .integer()
     .required(),
 });
 
-export default { create, update, query, summary, getID };
+export default { create, query, summary, getID };
