@@ -9,21 +9,30 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.createType('transaction_type', ['income', 'expense']);
-
-  pgm.createTable('categories', {
-    id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
-    user_id: { type: 'uuid', references: 'users(id)', onDelete: 'CASCADE' }, // null = default
-    name: { type: 'varchar(100)', notNull: true },
-    type: { type: 'transaction_type', notNull: true },
-    icon: { type: 'varchar(50)' },
-    is_default: { type: 'boolean', notNull: true, default: false },
+  pgm.createType('category_type', [
+    'pemasukan',
+    'pengeluaran',
+  ]);
+  pgm.createTable('kategori', {
+    id_kategori: {
+      type: 'serial',
+      primaryKey: true,
+    },
+    nama: {
+      type: 'varchar(100)',
+      notNull: true,
+      unique: true,
+    },
+    type: {
+      type: 'category_type',
+      notNull: true,
+    },
   });
 };
 
 export const down = (pgm) => {
-  pgm.dropTable('categories');
-  pgm.dropType('transaction_type');
+  pgm.dropTable('kategori');
+  pgm.dropType('category_type');
 };
 
 /**

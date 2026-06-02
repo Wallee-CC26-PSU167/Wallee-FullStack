@@ -1,18 +1,21 @@
 import Joi from 'joi';
 
 const update = Joi.object({
-  name: Joi.string()
+  nama: Joi.string()
     .min(2)
     .max(50),
 
   email: Joi.string()
     .email(),
+  password_hash: Joi.string()
+    .min(6),
   currentPassword: Joi.string()
     .min(6)
-    .when('password_hash', { is: Joi.exist(), then: Joi.required() }),
+    .allow('', null),
+
   newPassword: Joi.string()
     .min(6)
-    .when('currentPassword', { is: Joi.exist(), then: Joi.required() }),
+    .allow('', null),
 }).min(1);
 
 export default { update };

@@ -14,7 +14,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const [form, setForm] = useState({
-    name: '',
+    nama: '',
     email: '',
     password_hash: '',
     currency: 'IDR',
@@ -29,7 +29,7 @@ export default function Settings() {
       setTimeout(() => {
         setUser(response.data);
         setForm({
-          name: response.data.name || '',
+          nama: response.data.nama || '',
           email: response.data.email || '',
           password_hash: '',
         });
@@ -99,8 +99,8 @@ export default function Settings() {
               <label className="text-sm font-medium px-1">Nama Lengkap</label>
               <InputFields
                 type="text"
-                value={form.name || ''}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                value={form.nama || ''}
+                onChange={(e) => setForm({ ...form, nama: e.target.value })}
               />
             </div>
             <div className="space-y-1.5">

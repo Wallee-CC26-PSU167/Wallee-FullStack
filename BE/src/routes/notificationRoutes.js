@@ -15,10 +15,10 @@ router.get(
   "/",
   notificationController.getNotifications
 );
-
 router.patch(
   "/dismiss/:itemId",
   notificationController.dismissNotification
 );
+
 
 export default router;

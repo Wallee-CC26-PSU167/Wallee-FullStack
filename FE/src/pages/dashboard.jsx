@@ -12,95 +12,22 @@ import Card from '../components/ui/card';
 import ButtonGrad from '../components/ui/buttongrad';
 import Badge from '../components/ui/Badge';
 import { getTransactions } from '../services/transactionService';
-
-// ── Dummy notifikasi AI ───────────────────────────────────────
-// Dummy — ganti dengan fetch API saat backend siap
-// GET /anomalies/latest?dismissed=false
-const DUMMY_ANOMALY = {
-  id: "trx_001",
-  merchant: "Superindo Babarsari",
-  amount: 187500,
-  date: "2025-04-28",
-  time: "02:14",
-  anomalies: [
-    {
-      id: "an_001",
-      type: "PRICE_SPIKE",
-      message: "Harga item naik 3× dari biasanya",
-      detail: [
-        { item_name: "Susu Ultra 1L", usual_price: 12000, current_price: 36000 }
-      ],
-      dismissed: false,
-    },
-    {
-      id: "an_002",
-      type: "UNUSUAL_TIME",
-      message: "Transaksi di luar jam biasa",
-      detail: [
-        { usual_hour: "08:00", detected_hour: "02:14" }
-      ],
-      dismissed: false,
-    },
-  ],
-};
-
-const ANOMALY_TYPE_LABEL = {
-  PRICE_SPIKE:   "Lonjakan Harga",
-  UNUSUAL_TIME:  "Waktu Tidak Biasa",
-  UNUSUAL_LOCATION: "Lokasi Tidak Biasa",
-  DUPLICATE:     "Transaksi Duplikat",
-};
-// Ganti dengan API call ke backend saat sudah siap
-// Urutkan dari yang terbaru (index 0 = paling baru)
-// ── AI Notification Banner ────────────────────────────────────
-// Tidak ada lagi prop onDismiss
-
-// Dummy 3 transaksi anomali terbaru — ganti dengan API
-// GET /anomalies/recent?limit=3
-const DUMMY_BELL_NOTIFICATIONS = [
-  {
-    id: "trx_001",
-    merchant: "Superindo Babarsari",
-    amount: 187500,
-    date: "2025-04-28",
-    time: "02:14",
-    anomalies: [
-      { id: "an_001", type: "PRICE_SPIKE",  message: "Harga item naik 3× dari biasanya", dismissed: false },
-      { id: "an_002", type: "UNUSUAL_TIME", message: "Transaksi di luar jam biasa",       dismissed: false },
-    ],
-  },
-  {
-    id: "trx_002",
-    merchant: "Gojek Food",
-    amount: 65000,
-    date: "2025-04-27",
-    time: "13:20",
-    anomalies: [
-      { id: "an_003", type: "UNUSUAL_TIME", message: "Transaksi di luar jam biasa", dismissed: true },
-    ],
-  },
-  {
-    id: "trx_003",
-    merchant: "Indomaret Seturan",
-    amount: 43000,
-    date: "2025-04-26",
-    time: "23:45",
-    anomalies: [
-      { id: "an_004", type: "PRICE_SPIKE", message: "Lonjakan harga tidak wajar", dismissed: false },
-    ],
-  },
-];
-
+import { getNotifications, getLatestNotification } from '../services/notificationService';
 function BellDropdown({ onClose }) {
-  const [notifications, setNotifications] = useState(DUMMY_BELL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
 
   // Fetch ulang saat dropdown dibuka
   useEffect(() => {
-    // Ganti dengan: 
-    // const res = await api.get("/anomalies/recent?limit=3")
-    // setNotifications(res.data)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNotifications(DUMMY_BELL_NOTIFICATIONS);
+    const fetchNotifications = async () => {
+      try {
+        const data =
+          await getNotifications();
+        setNotifications(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchNotifications();
   }, []);
 
   return (
@@ -215,8 +142,11 @@ function AINotificationBanner({ transaction }) {
   if (!transaction) return null;
 
   // Hanya tampilkan anomali yang belum dismissed
-  const activeAnomalies = transaction.anomalies.filter(a => !a.dismissed);
-  if (activeAnomalies.length === 0) return null;
+  const unreadAnomalies =
+  transaction.anomalies.filter(
+    a => !a.dismissed
+  );
+  if (unreadAnomalies.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -261,7 +191,7 @@ function AINotificationBanner({ transaction }) {
                 className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white"
                 style={{ background: "linear-gradient(135deg,#3975E6,#9E4CC6)" }}
               >
-                {activeAnomalies.length}
+                {unreadAnomalies.length}
               </span>
             </div>
 
@@ -277,7 +207,7 @@ function AINotificationBanner({ transaction }) {
 
             {/* List anomali */}
             <div className="flex flex-col gap-2">
-              {activeAnomalies.map((anomaly) => (
+              {unreadAnomalies.map((anomaly) => (
                 <div
                   key={anomaly.id}
                   className="flex items-start gap-2 bg-white/60 rounded-xl px-3 py-2 border border-white/80"
@@ -288,7 +218,7 @@ function AINotificationBanner({ transaction }) {
                       className="text-[10px] font-bold uppercase tracking-wider"
                       style={{ color: "#9E4CC6" }}
                     >
-                      {ANOMALY_TYPE_LABEL[anomaly.type] ?? anomaly.type}
+                      {anomaly.type}
                     </span>
                     <p className="text-xs text-gray-700 leading-relaxed">
                       {anomaly.message}
@@ -321,24 +251,50 @@ export default function Dashboard() {
   const [balanceHidden,  setBalanceHidden]  = useState(false);
   const [notification,   setNotification]   = useState(null);
   const [anomaly, setAnomaly] = useState(null);
-  const [bellOpen, setBellOpen] = useState(false);
-  const hasUnreadAnomaly = DUMMY_BELL_NOTIFICATIONS.some(
-  n => n.anomalies.some(a => !a.dismissed)
-);
-
-  // Ambil notifikasi terbaru saat mount
+  const [bellOpen, setBellOpen] =
+    useState(false);
+  const [notifications, setNotifications] =
+    useState([]);
+  // Badge unread
+  const hasUnreadAnomaly =
+    notifications.some(
+      n => n.anomalies.some(
+        a => !a.dismissed
+      )
+    );
+  // Ambil notification saat dashboard mount
   useEffect(() => {
-  // Ganti dengan: const res = await api.get("/anomalies/latest?dismissed=false")
-  // setAnomaly(res.data)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  setAnomaly(DUMMY_ANOMALY);
+    const fetchNotifications = async () => {
+      try {
+        const data =
+          await getNotifications();
+        // Simpan semua notif
+        setNotifications(data);
+        // Cari latest unread anomaly
+        const latestUnread =
+          data.find(notification =>
+            notification.anomalies.some(
+              anomaly => !anomaly.dismissed
+            )
+          );
+
+        setAnomaly(latestUnread || null);
+      } catch (error) {
+        console.error(
+          "Failed fetch notifications:",
+          error
+        );
+      }
+    };
+    fetchNotifications();
   }, []);
 
   const fetchTransactions = async () => {
     try {
       const data = await getTransactions();
+      console.log("Fetched transactions:", data);
       setTimeout(() => {
-        setTransactions(data.data.transactions);
+        setTransactions(data.data);
       }, 0);
     } catch (error) {
       console.log(error);

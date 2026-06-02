@@ -1,10 +1,23 @@
 export const up = (pgm) => {
-  pgm.createTable('users', {
-    id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
-    name: { type: 'varchar(100)', notNull: true },
-    email: { type: 'varchar(255)', notNull: true, unique: true },
-    password_hash: { type: 'text', notNull: true },
-    created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
+  pgm.createTable("users", {
+    id_user: {
+      type: "varchar(10)",
+      primaryKey: true,
+    },
+    nama: {
+      type: "varchar(100)",
+    },
+    email: {
+      type: "varchar(100)",
+      unique: true,
+    },
+    password: {
+      type: "text",
+    },
+    created_at: {
+      type: "timestamp",
+      default: pgm.func("current_timestamp"),
+    },
   });
 };
 

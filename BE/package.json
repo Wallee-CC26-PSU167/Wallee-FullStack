@@ -7,10 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "migrate": "node-pg-migrate up",
+    "migrate": "npx node-pg-migrate -d postgres://postgres:admin@localhost:5432/wallee_fiks up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
-    "seed": "node seed/seed.js"
+    "seed": "node seed/seed.js",
+    "import:dataset": "node src/script/importDataset.js"
   },
   "keywords": [],
   "author": "",

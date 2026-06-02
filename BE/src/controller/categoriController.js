@@ -9,7 +9,7 @@ const getAll = async (req, res) => {
       data: categories
     })
   } catch (err) {
-    res.status(404).json({
+    res.status(500).json({
       success: false,
       message: err.message,
       data: null

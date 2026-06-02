@@ -52,7 +52,7 @@ export default function Transactions() {
     try {
       const data = await getTransactions();
       setTimeout(() => {
-      setTransactions(data.data.transactions);
+      setTransactions(data.data);
     }, 0);
     } catch (error) {
       console.log(error);
@@ -80,12 +80,12 @@ export default function Transactions() {
     return matchSearch && matchType && matchCategory;
   });
 
-  const grouped = filtered.reduce((acc, tx) => {
-    const key = tx.date ? tx.date.split('T')[0] : 'unknown';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(tx);
-    return acc;
-  }, {});
+    const grouped = filtered.slice(0, 30).reduce((acc, tx) => {
+      const key = tx.date ? tx.date.split('T')[0] : 'unknown';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(tx);
+      return acc;
+    }, {});
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-5 min-h-screen">

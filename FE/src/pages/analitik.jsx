@@ -127,7 +127,7 @@ export default function Analytics() {
     try {
       const data = await getTransactions();
       setTimeout(() => {
-        setTransactions(data.data.transactions);
+        setTransactions(data.data);
       }, 0);
     } catch (error) {
       console.log(error);
@@ -152,19 +152,18 @@ export default function Analytics() {
   }, []);
 
   const now = new Date();
+  const yearAgo = new Date();
+  yearAgo.setFullYear(now.getFullYear() - 1);
   const filtered = transactions.filter(tx => {
     if (!tx.date) return false;
     const d = new Date(tx.date);
-    if (period === 'week') {
-      const weekAgo = new Date(now);
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return d >= weekAgo;
-    }
     if (period === 'month') {
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      return d.getMonth() === yearAgo.getMonth() && d.getFullYear() === yearAgo.getFullYear();
     }
-    if (period === 'year') {
-      return d.getFullYear() === now.getFullYear();
+    if (period === 'month_ago') {
+      const monthAgo = new Date(yearAgo);
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      return d >= monthAgo && d < yearAgo;
     }
     return true;
   });
@@ -215,9 +214,8 @@ export default function Analytics() {
             onChange={(e) => setPeriod(e.target.value)}
             className="appearance-none w-30 text-xs"
           >
-            <option value="week">Minggu Ini</option>
             <option value="month">Bulan Ini</option>
-            <option value="year">Tahun Ini</option>
+            <option value="month_ago">Bulan Lalu</option>
           </SelectFields>
         </div>
       </div>

@@ -61,7 +61,8 @@ const getNotifications = async (userId) => {
      groupedNotifications[row.notification_id]
         .anomalies
         .push({
-            id: row.external_anomaly_id,
+            id: row.item_id,
+            external_id: row.external_anomaly_id,
             type: row.anomaly_type,
             message: row.message,
             detail: row.metadata,
@@ -158,9 +159,81 @@ const dismissNotification = async (
   await redis.del(`notifications:${userId}`);
   return true;
 };
+const getLatestUnreadNotification =
+  async (userId) => {
+  const result = await db.query(
+    `
+    SELECT
+      n.id AS notification_id,
+      n.transaction_id,
+      n.merchant,
+      n.amount,
+      n.transaction_date,
+      n.transaction_time,
+      n.item_count,
+      n.created_at,
+
+      ni.id AS item_id,
+      ni.external_anomaly_id,
+      ni.anomaly_type,
+      ni.message,
+      ni.is_dismissed,
+      ni.metadata
+
+    FROM notifications n
+    JOIN notification_items ni
+      ON ni.notification_id = n.id
+    WHERE ni.is_dismissed = false
+    ORDER BY n.created_at DESC
+    `
+  );
+  if (result.rows.length === 0) {
+    return null;
+  }
+  const groupedNotifications = {};
+  for (const row of result.rows) {
+    if (
+      !groupedNotifications[
+        row.notification_id
+      ]
+    ) {
+      groupedNotifications[
+        row.notification_id
+      ] = {
+        id: row.transaction_id,
+        merchant: row.merchant,
+        amount: Number(row.amount),
+        date:
+          row.transaction_date
+            ?.toISOString()
+            ?.split("T")[0],
+        time: row.transaction_time,
+        item_count: row.item_count,
+        anomalies: []
+      };
+    }
+
+    groupedNotifications[
+      row.notification_id
+    ]
+    .anomalies
+    .push({
+      id: row.item_id,
+      type: row.anomaly_type,
+      message: row.message,
+      detail: row.metadata,
+      dismissed: row.is_dismissed
+    });
+  }
+
+  return Object.values(
+    groupedNotifications
+  )[0];
+};
 
 export default {
   getNotifications,
   saveNotification,
-  dismissNotification
+  dismissNotification,
+  getLatestUnreadNotification,
 };
