@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Wallet } from "lucide-react";
-import WalleeLogo from "/Users/macbookpro2019/Documents/Dicoding/wallee/FE/src/assets/Logo_Full.png";
+import WalleeLogo from "../assets/Logo_Full.png";
 import Card from "../components/ui/card";
 import ButtonGrad from "../components/ui/buttongrad";
 import InputFields from "../components/ui/input";

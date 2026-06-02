@@ -228,28 +228,7 @@ export default function Dashboard() {
         onDismiss={() => setNotification(null)}
       />
 
-      {/* 4. QUICK ACTIONS */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { icon: Plus,           label: "Tambah",  path: "/add-transaction", grad: true },
-          { icon: ArrowLeftRight, label: "Riwayat", path: "/transactions" },
-          { icon: BarChart3,      label: "Analitik",path: "/analytics" },
-          { icon: MessageSquare,  label: "AI Chat", path: "/chat" },
-        ].map((action, i) => (
-          <Link key={i} to={action.path} className="flex flex-col items-center gap-2 group">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 ${
-              action.grad
-                ? 'bg-[linear-gradient(135deg,#3975E6,#9E4CC6)] shadow-lg shadow-primary/20'
-                : 'bg-card border border-border/50 group-hover:bg-accent'
-            }`}>
-              <action.icon className={`w-5 h-5 ${action.grad ? 'text-white' : 'text-muted-foreground group-hover:text-primary'}`} />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground">{action.label}</span>
-          </Link>
-        ))}
-      </div>
-
-      {/* 5. STATS GRID */}
+      {/* 4. STATS GRID */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4 flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-2 text-emerald-600">
@@ -267,7 +246,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* 6. RECENT TRANSACTIONS */}
+      {/* 5. RECENT TRANSACTIONS */}
       <Card>
         <div className="flex items-center justify-between p-5 pb-3">
           <h3 className="font-bold text-[hsl(225,20%,12%)]">Transaksi Terakhir</h3>
