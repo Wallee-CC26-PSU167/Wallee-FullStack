@@ -268,28 +268,77 @@ const getSummary = async (
       ),
   };
 };
-const getAnalyticsTransactions = async (userId) => {
+const getAnalyticsTransactions =
+  async (userId) => {
   const result = await db.query(
     `
-      SELECT
-        t.id_transaksi AS id,
-        t.total_harga AS amount,
-
-        CASE
-          WHEN t.tipe = 'pemasukan'
-          THEN 'income'
-          ELSE 'expense'
-        END AS type,
-
-        t.merchant AS description,
-        t.transaction_date AS date,
-        t.transaction_time AS time
-
-      FROM transaksi t
-      WHERE t.id_user = $1
-      ORDER BY
-        t.transaction_date DESC,
-        t.transaction_time DESC
+    SELECT
+      t.id_transaksi AS id,
+      t.total_harga AS amount,
+      CASE
+        WHEN t.tipe = 'pemasukan'
+        THEN 'income'
+        ELSE 'expense'
+      END AS type,
+      t.merchant AS description,
+      t.transaction_date AS date,
+      t.transaction_time AS time,
+      -- kategori income
+      CASE
+        WHEN t.tipe = 'pemasukan'
+        THEN json_build_object(
+          'id', k.id_kategori,
+          'name', k.nama
+        )
+        ELSE NULL
+      END AS category,
+      -- items expense
+      CASE
+        WHEN t.tipe = 'pengeluaran'
+        THEN COALESCE(
+          json_agg(
+            json_build_object(
+              'id',
+              it.id_item_transaksi,
+              'name',
+              it.nama_item,
+              'qty',
+              it.qty,
+              'price',
+              it.harga,
+              'subtotal',
+              it.subtotal,
+              'category',
+              json_build_object(
+                'id',
+                ik.id_kategori,
+                'name',
+                ik.nama
+              )
+            )
+          )
+          FILTER (
+            WHERE it.id_item_transaksi
+            IS NOT NULL
+          ),
+          '[]'
+        )
+        ELSE NULL
+      END AS items
+    FROM transaksi t
+    LEFT JOIN kategori k
+      ON k.id_kategori = t.id_kategori
+    LEFT JOIN item_transaksi it
+      ON it.id_transaksi = t.id_transaksi
+    LEFT JOIN kategori ik
+      ON ik.id_kategori = it.id_kategori
+    WHERE t.id_user = $1
+    GROUP BY
+      t.id_transaksi,
+      k.id_kategori
+    ORDER BY
+      t.transaction_date DESC,
+      t.transaction_time DESC
     `,
     [userId]
   );
