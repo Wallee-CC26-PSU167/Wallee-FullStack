@@ -292,7 +292,6 @@ export default function Dashboard() {
   const fetchTransactions = async () => {
     try {
       const data = await getTransactions();
-      console.log("Fetched transactions:", data);
       setTimeout(() => {
         setTransactions(data.data);
       }, 0);

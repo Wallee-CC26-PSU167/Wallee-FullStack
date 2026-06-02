@@ -173,7 +173,7 @@ export default function Analytics() {
 
   const categoryData = Object.entries(
     filtered.filter(t => t.type === 'expense').reduce((acc, t) => {
-      const name = t?.category_name || "Lainnya";
+      const name = t.items?.[0]?.category?.name || "Lainnya";
       acc[name] = (acc[name] || 0) + parseFloat(t.amount);
       return acc;
     }, {})
