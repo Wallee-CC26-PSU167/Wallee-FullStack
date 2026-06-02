@@ -34,7 +34,43 @@ const login = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const result = await authService.forgotPassword(req.body);
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: null
+    });
+  } catch (err) {
+    res.status(400).json({ 
+      success: false,
+      message: err.message,
+      data: null
+     });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const result = await authService.resetPassword(req.body);
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: null
+    });
+  } catch (err) {
+    res.status(400).json({ 
+      success: false,
+      message: err.message,
+      data: null
+     });
+  }
+};
+
 export default {
   register,
   login,
+  forgotPassword,
+  resetPassword,
 };
