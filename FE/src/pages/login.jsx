@@ -133,6 +133,11 @@ export default function Login() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {apiErr && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-[10px] text-sm text-center">
+                  {apiErr}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">

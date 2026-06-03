@@ -54,10 +54,14 @@ export default function Register() {
     setLoading(true);
     setApiErr("");
     try {
-      const response = await registerUser(form);
-      navigate("/dashboard");
+      const response = await registerUser({
+        nama: form.name,
+        email: form.email,
+        password: form.password
+      });
+      navigate("/login");
     } catch (err) {
-      setApiErr(err.message ?? "Registrasi gagal. Coba lagi.");
+      setApiErr(err.response?.data?.message || err.message || "Registrasi gagal. Coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -129,6 +133,11 @@ export default function Register() {
             </div>
             
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {apiErr && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-[10px] text-sm text-center">
+                  {apiErr}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">

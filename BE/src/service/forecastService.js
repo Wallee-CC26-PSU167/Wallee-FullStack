@@ -31,9 +31,8 @@ export const getForecastingResult = async (userId) => {
     await redisClient.set(
       cacheKey,
       JSON.stringify(forecastingResult),
-      {
-        EX: 86400,
-      }
+      "EX",
+      86400
     );
     console.log("FORECAST FROM AI");
     return forecastingResult;
