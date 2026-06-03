@@ -1,11 +1,13 @@
 // service/transactionService.js
 import transaksiRepository from "../repositories/transactionRepository.js";
+import redis from "../config/redis.js";
 import db from "../config/db.js";
 import {
   getCache,
   setCache,
   invalidateUserCache,
 } from "../utils/cache.js";
+import notificationService from "./notificationService.js";
 
 // ── TTL per fungsi ────────────────────────────────────────────
 const TTL = {
@@ -83,6 +85,16 @@ const create = async (userId, payload) => {
 
     // ── Invalidate cache setelah data baru masuk ──────────────
     await invalidateUserCache(userId);
+    const today = new Date().toISOString().split("T")[0];
+    const cacheKey = `anomaly-generated:${userId}:${today}`;
+    const alreadyGenerated = await redis.get(cacheKey);
+    if (!alreadyGenerated) {
+      console.log("GENERATING DAILY ANOMALY...");
+      await notificationService.generateDailyAnomaly(userId);
+      await redis.set(cacheKey, true, "EX", 86400);
+    } else {
+      console.log("AI ALREADY GENERATED TODAY");
+    }
     console.log(`[Cache] Invalidated for user ${userId} after create`);
 
     return { ...transaksi, items };

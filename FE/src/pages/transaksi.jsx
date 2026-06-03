@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, Trash2, ArrowLeftRight, ChevronDown } from 'lucide-react';
+import { Search, Plus, Trash2, ArrowLeftRight, ChevronDown, AlertTriangle, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,29 +11,201 @@ import Card from '../components/ui/card';
 import Badge from '../components/ui/Badge';
 import ButtonGrad from '../components/ui/buttongrad';
 import { getTransactions, deleteTransaction } from '../services/transactionService';
+import { getNotifications, dismissNotification } from '../services/anomalyService';
 import { getCategories } from '../services/category_service';
 
+// ── Helpers ───────────────────────────────────────────────────
 function formatCurrency(val) {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
   }).format(val);
 }
 
-// ── Transaction Item ──────────────────────────────────────────
-function TransactionItem({ tx, onDelete }) {
-  const [expanded, setExpanded] = useState(false);
+const ANOMALY_TYPE_LABEL = {
+  PRICE_SPIKE:      "Lonjakan Harga",
+  UNUSUAL_TIME:     "Waktu Tidak Biasa",
+  UNUSUAL_LOCATION: "Lokasi Tidak Biasa",
+  DUPLICATE:        "Transaksi Duplikat",
+};
 
-  const isExpense = tx.type === 'expense';
-  const hasItems  = isExpense && Array.isArray(tx.items) && tx.items.length > 0;
+const ANOMALY_TYPE_COLOR = {
+  PRICE_SPIKE:      { bg: "rgba(239,68,68,0.08)",  border: "rgba(239,68,68,0.2)",  text: "#DC2626" },
+  UNUSUAL_TIME:     { bg: "rgba(234,179,8,0.08)",  border: "rgba(234,179,8,0.2)",  text: "#CA8A04" },
+  UNUSUAL_LOCATION: { bg: "rgba(249,115,22,0.08)", border: "rgba(249,115,22,0.2)", text: "#EA580C" },
+  DUPLICATE:        { bg: "rgba(168,85,247,0.08)", border: "rgba(168,85,247,0.2)", text: "#9333EA" },
+};
 
-  // Kategori: income → tx.category.name | expense → ambil dari items
-  const categoryLabel = !isExpense
-    ? tx.category?.name ?? '-'
-    : null;
+// ── Anomaly Popover ───────────────────────────────────────────
+function AnomalyPopover({ notification, onClose, onDismissed }) {
+  const ref         = useRef(null);
+  const [items, setItems] = useState(notification.items);
+  const [loadingId, setLoadingId] = useState(null);
+
+  // Tutup jika klik di luar
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
+
+  const handleDismiss = async (itemId) => {
+    setLoadingId(itemId);
+    try {
+      await dismissNotification(itemId);
+
+      // Update state lokal — tandai item sebagai sudah dibaca
+      setItems(prev =>
+        prev.map(i => i.id === itemId ? { ...i, is_dismissed: true } : i)
+      );
+
+      toast.success("Anomali ditandai sudah dibaca");
+      onDismissed(); // trigger refetch di parent
+    } catch {
+      toast.error("Gagal memperbarui status anomali");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const activeItems    = items.filter(i => !i.is_dismissed);
+  const dismissedItems = items.filter(i => i.is_dismissed);
 
   return (
     <motion.div
-      key={tx.id}
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.95, y: -4 }}
+      animate={{ opacity: 1, scale: 1,    y: 0  }}
+      exit={{    opacity: 0, scale: 0.95, y: -4  }}
+      transition={{ duration: 0.15 }}
+      className="absolute right-0 top-8 w-72 bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      style={{ zIndex: 50, boxShadow: "0 8px 32px rgba(15,24,41,0.14)" }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div>
+          <p className="text-sm font-bold text-gray-800">Detail Anomali</p>
+          <p className="text-[10px] text-gray-400">{items.length} anomali ditemukan</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Active items */}
+      {activeItems.length > 0 && (
+        <div className="p-3 space-y-2">
+          {activeItems.map((item) => {
+            const color = ANOMALY_TYPE_COLOR[item.anomaly_type]
+              ?? { bg: "rgba(107,114,128,0.08)", border: "rgba(107,114,128,0.2)", text: "#6B7280" };
+
+            return (
+              <div
+                key={item.id}
+                className="rounded-xl p-3"
+                style={{ background: color.bg, border: `1px solid ${color.border}` }}
+              >
+                {/* Type label */}
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider block mb-1"
+                  style={{ color: color.text }}
+                >
+                  {ANOMALY_TYPE_LABEL[item.anomaly_type] ?? item.anomaly_type}
+                </span>
+
+                {/* Pesan */}
+                <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                  {item.message}
+                </p>
+
+                {/* Metadata */}
+                {item.metadata && (
+                  <div className="bg-white/70 rounded-lg px-2.5 py-2 mb-2 space-y-0.5">
+                    {Object.entries(item.metadata).map(([k, v]) => (
+                      <div key={k} className="flex justify-between text-[11px]">
+                        <span className="text-gray-400 capitalize">
+                          {k.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-semibold text-gray-700">
+                          {typeof v === 'number' && k.includes('price')
+                            ? formatCurrency(v)
+                            : String(v)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Tombol dismiss */}
+                <button
+                  onClick={() => handleDismiss(item.id)}
+                  disabled={loadingId === item.id}
+                  className="w-full h-7 rounded-lg text-[11px] font-semibold text-white transition-all active:scale-95 disabled:opacity-60 flex items-center justify-center gap-1.5"
+                  style={{ background: "linear-gradient(135deg,#3975E6,#9E4CC6)" }}
+                >
+                  {loadingId === item.id ? (
+                    <>
+                      <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                      </svg>
+                      Memproses...
+                    </>
+                  ) : "Tandai sudah dibaca"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Dismissed items */}
+      {dismissedItems.length > 0 && (
+        <div className="px-3 pb-3 space-y-1.5">
+          {activeItems.length > 0 && (
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-1 pb-1">
+              Sudah dibaca
+            </p>
+          )}
+          {dismissedItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl"
+            >
+              <span className="text-gray-300 text-sm">✓</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400">
+                  {ANOMALY_TYPE_LABEL[item.anomaly_type] ?? item.anomaly_type}
+                </p>
+                <p className="text-[11px] text-gray-400 truncate">{item.message}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ── Transaction Item ──────────────────────────────────────────
+function TransactionItem({ tx, notification, onDelete, onAnomalyDismissed }) {
+  const [expanded,     setExpanded]     = useState(false);
+  const [showAnomaly,  setShowAnomaly]  = useState(false);
+
+  const isExpense      = tx.type === 'expense';
+  const hasItems       = isExpense && Array.isArray(tx.items) && tx.items.length > 0;
+  const categoryLabel  = !isExpense ? tx.category?.name ?? '-' : null;
+
+  // Badge anomali — aktif jika ada item yang belum dismissed
+  const hasAnomaly      = !!notification;
+  const hasActiveAnomaly = notification?.items?.some(i => !i.is_dismissed);
+
+  return (
+    <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 10 }}
@@ -53,6 +225,7 @@ function TransactionItem({ tx, onDelete }) {
             {tx.description}
           </p>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
+
             {/* Badge kategori — income */}
             {!isExpense && categoryLabel && (
               <Badge>{categoryLabel}</Badge>
@@ -65,29 +238,56 @@ function TransactionItem({ tx, onDelete }) {
               </Badge>
             )}
 
-            {/* Tombol expand items */}
+            {/* Expand items */}
             {hasItems && (
               <button
                 onClick={() => setExpanded(p => !p)}
                 className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-400 hover:text-blue-500 transition-colors"
               >
                 {expanded ? 'Sembunyikan' : 'Lihat item'}
-                <ChevronDown
-                  className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-                />
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
               </button>
+            )}
+
+            {/* Badge anomali */}
+            {hasAnomaly && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowAnomaly(p => !p)}
+                  className={[
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all active:scale-95",
+                    hasActiveAnomaly
+                      ? "bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100"
+                      : "bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-200",
+                  ].join(" ")}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  {hasActiveAnomaly ? "Anomali" : "Diperiksa"}
+                </button>
+
+                <AnimatePresence>
+                  {showAnomaly && (
+                    <AnomalyPopover
+                      notification={notification}
+                      onClose={() => setShowAnomaly(false)}
+                      onDismissed={() => {
+                        setShowAnomaly(false);
+                        onAnomalyDismissed();
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Nominal */}
+        {/* Nominal + waktu */}
         <div className="text-right shrink-0 mr-2">
           <p className={`text-sm font-bold ${isExpense ? 'text-gray-800' : 'text-emerald-600'}`}>
             {isExpense ? '-' : '+'}{formatCurrency(tx.amount)}
           </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            {tx.time?.slice(0, 5)}
-          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5">{tx.time?.slice(0, 5)}</p>
         </div>
 
         {/* Delete */}
@@ -99,7 +299,7 @@ function TransactionItem({ tx, onDelete }) {
         </button>
       </div>
 
-      {/* Items expandable — hanya untuk expense */}
+      {/* Expandable items */}
       <AnimatePresence initial={false}>
         {expanded && hasItems && (
           <motion.div
@@ -110,16 +310,12 @@ function TransactionItem({ tx, onDelete }) {
             className="overflow-hidden"
           >
             <div className="mx-4 mb-3 bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-100">
-
-              {/* Header kolom */}
               <div className="grid grid-cols-12 gap-2 px-3 py-2">
                 <span className="col-span-5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Item</span>
                 <span className="col-span-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kategori</span>
                 <span className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Qty</span>
                 <span className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Subtotal</span>
               </div>
-
-              {/* Baris per item */}
               {tx.items.map((item) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 px-3 py-2.5 items-center">
                   <div className="col-span-5 min-w-0">
@@ -136,19 +332,13 @@ function TransactionItem({ tx, onDelete }) {
                     <span className="text-xs font-semibold text-gray-600">{item.qty}x</span>
                   </div>
                   <div className="col-span-2 text-right">
-                    <span className="text-xs font-bold text-gray-800">
-                      {formatCurrency(item.subtotal)}
-                    </span>
+                    <span className="text-xs font-bold text-gray-800">{formatCurrency(item.subtotal)}</span>
                   </div>
                 </div>
               ))}
-
-              {/* Total baris */}
               <div className="flex justify-between items-center px-3 py-2.5">
                 <span className="text-xs font-semibold text-gray-500">Total</span>
-                <span className="text-sm font-bold text-gray-900">
-                  {formatCurrency(tx.amount)}
-                </span>
+                <span className="text-sm font-bold text-gray-900">{formatCurrency(tx.amount)}</span>
               </div>
             </div>
           </motion.div>
@@ -166,36 +356,60 @@ export default function Transactions() {
   const [transactions,   setTransactions]   = useState([]);
   const [categories,     setCategories]     = useState([]);
 
+  // Map transaction_id → notification untuk lookup O(1)
+  const [anomalyMap, setAnomalyMap] = useState({});
+
+  // ── Fetch categories ────────────────────────────────────────
   useEffect(() => {
-    const loadCategories = async () => {
+    const load = async () => {
       try {
         const data = await getCategories();
         setCategories(data.data);
       } catch (e) { console.log(e); }
     };
-    loadCategories();
+    load();
   }, []);
 
-  const fetchTransactions = async () => {
+  // ── Fetch transactions ──────────────────────────────────────
+  const fetchTransactions = useCallback(async () => {
     try {
       const data = await getTransactions();
       setTimeout(() => setTransactions(data.data), 0);
     } catch (e) { console.log(e); }
-  };
+  }, []);
 
-  useEffect(() => { fetchTransactions(); }, []);
+  // ── Fetch anomalies ─────────────────────────────────────────
+  const fetchAnomalies = useCallback(async () => {
+    try {
+      const data = await getNotifications();
+      // Bangun map: transaction_id → notification object
+      const map = {};
+      const list = data.data ?? data; // handle { data: [...] } atau [...]
+      list.forEach(notif => {
+        map[notif.transaction_id] = notif;
+      });
+      setAnomalyMap(map);
+    } catch (e) { console.log(e); }
+  }, []);
 
+  useEffect(() => {
+    fetchTransactions();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAnomalies();
+  }, [fetchTransactions, fetchAnomalies]);
+
+  // ── Delete ──────────────────────────────────────────────────
   const handleDelete = async (id) => {
     try {
       await deleteTransaction(id);
       fetchTransactions();
       toast.success('Transaksi berhasil dihapus');
-    } catch (e) {
+    } catch {
       toast.error('Gagal menghapus transaksi');
     }
   };
 
-  // Filter — kategori expense cek di items, income cek di tx.category
+  // ── Filter ──────────────────────────────────────────────────
   const filtered = transactions.filter(tx => {
     const matchSearch = !search ||
       tx.description?.toLowerCase().includes(search.toLowerCase()) ||
@@ -248,7 +462,6 @@ export default function Transactions() {
             className="pl-10"
           />
         </div>
-
         <SelectFields
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
@@ -258,7 +471,6 @@ export default function Transactions() {
           <option value="income">Pemasukan</option>
           <option value="expense">Pengeluaran</option>
         </SelectFields>
-
         <SelectFields
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
@@ -295,15 +507,15 @@ export default function Transactions() {
                     ? format(new Date(dateKey), 'EEEE, d MMMM yyyy', { locale: idLocale })
                     : 'Tanggal tidak diketahui'}
                 </p>
-
-                {/* overflow-visible agar popover/expand tidak terpotong */}
                 <Card className="border border-gray-100 divide-y divide-gray-100 overflow-visible">
                   <AnimatePresence initial={false}>
                     {txs.map((tx) => (
                       <TransactionItem
                         key={tx.id}
                         tx={tx}
+                        notification={anomalyMap[tx.id] ?? null}
                         onDelete={handleDelete}
+                        onAnomalyDismissed={fetchAnomalies}
                       />
                     ))}
                   </AnimatePresence>

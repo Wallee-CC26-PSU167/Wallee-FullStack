@@ -1,10 +1,163 @@
 import db from "../config/db.js";
 import redis from "../config/redis.js";
+import axios from "axios";
+
+const generateDailyAnomaly = async (
+  userId
+) => {
+  const transactionResult =
+    await db.query(
+      `
+      SELECT
+          t.id_transaksi,
+          t.merchant,
+          t.total_harga AS amount,
+          t.transaction_date AS date,
+          t.transaction_time AS time,
+          dt.nama_item AS item_name,
+          dt.harga,
+          dt.qty,
+          dt.subtotal,
+          k.nama AS category
+      FROM transaksi t
+      JOIN item_transaksi dt
+          ON dt.id_transaksi = t.id_transaksi
+      LEFT JOIN kategori k
+          ON k.id_kategori = dt.id_kategori
+      WHERE t.id_user = $1
+      AND t.transaction_date = CURRENT_DATE
+      ORDER BY t.transaction_date DESC
+      `,
+      [userId]
+    );
+  const transactions =
+    transactionResult.rows;
+  if (transactions.length === 0) {
+    return [];
+  }
+  console.log(
+    "RAW TRANSACTIONS:",
+    transactions
+  );
+  const groupedTransactions = {};
+  for (const row of transactions) {
+    const frequencyResult = await db.query(
+    `
+    SELECT
+        (
+        SELECT COUNT(*)
+        FROM transaksi
+        WHERE id_user = $1
+            AND merchant = $2
+            AND EXTRACT(YEAR FROM transaction_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            AND EXTRACT(MONTH FROM transaction_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+        ) AS merchant_monthly_freq,
+        (
+        SELECT AVG(monthly_count)
+        FROM (
+            SELECT COUNT(*) AS monthly_count
+            FROM transaksi
+            WHERE id_user = $1
+            AND merchant = $2
+            AND (
+                EXTRACT(YEAR FROM transaction_date) < EXTRACT(YEAR FROM CURRENT_DATE)
+                OR (
+                EXTRACT(YEAR FROM transaction_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND EXTRACT(MONTH FROM transaction_date) < EXTRACT(MONTH FROM CURRENT_DATE)
+                )
+            )
+            GROUP BY
+            EXTRACT(YEAR FROM transaction_date),
+            EXTRACT(MONTH FROM transaction_date)
+        ) m
+        ) AS merchant_avg_freq
+    `,
+    [userId, row.merchant]
+    );
+    const merchantFrequency = frequencyResult.rows[0];
+    if (
+      !groupedTransactions[
+        row.id_transaksi
+      ]
+    ) {
+      groupedTransactions[
+        row.id_transaksi
+      ] = {
+        id: row.id_transaksi,
+        merchant: row.merchant,
+        amount: Number(row.amount),
+        date:
+          row.date
+            ?.toISOString()
+            ?.split("T")[0],
+        time: row.time,
+        item_count: 0,
+        merchant_monthly_freq: Number(merchantFrequency.merchant_monthly_freq)||0,
+        merchant_avg_freq: Number(merchantFrequency.merchant_avg_freq)||null,
+        items: []
+      };
+    }
+    groupedTransactions[
+      row.id_transaksi
+    ]
+      .items
+      .push({
+        item_name: row.item_name,
+        harga: Number(row.harga),
+        qty: row.qty,
+        subtotal: Number(row.subtotal),
+        category: row.category,
+        usual_price: 0
+      });
+    groupedTransactions[
+      row.id_transaksi
+    ]
+      .item_count =
+        groupedTransactions[
+          row.id_transaksi
+        ]
+          .items
+          .length;
+  }
+  const formattedTransactions =
+    Object.values(
+      groupedTransactions
+
+    );
+  console.log(
+    "FORMATTED TRANSACTIONS:",
+    formattedTransactions
+  );
+  console.log("CALLING AI API...");
+//   const aiResponse = await axios.post(
+//     process.env.AI_ANOMALY_URL,
+//     formattedTransactions,
+//     {
+//       headers: {
+//         "Content-Type":
+//           "application/json"
+//       }
+//     }
+//   );
+//   console.log(
+//     "AI RESPONSE:",
+//     aiResponse.data
+//   );
+  const aiResults =
+    aiResponse.data;
+  for (const aiResult of aiResults) {
+    await saveNotification(
+      aiResult,
+      userId
+    );
+  }
+  return aiResults;
+};
 
 const getNotifications = async (userId) => {
-  const cacheKey = `notifications:${userId}`;
+  const today = new Date().toISOString().split("T")[0];
+  const cacheKey = `anomaly-generated:${userId}:${today}`;
   const cached = await redis.get(cacheKey);
-
   if (cached) {
     return JSON.parse(cached);
   }
@@ -236,4 +389,5 @@ export default {
   saveNotification,
   dismissNotification,
   getLatestUnreadNotification,
+  generateDailyAnomaly,
 };

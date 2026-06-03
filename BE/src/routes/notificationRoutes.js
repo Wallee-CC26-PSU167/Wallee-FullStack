@@ -10,7 +10,10 @@ router.post(
   "/",
   notificationController.saveNotification
 );
-
+router.post(
+  "/generate",
+  notificationController.generateNotifications
+);
 router.get(
   "/",
   notificationController.getNotifications

@@ -13,6 +13,7 @@ import ButtonGrad from '../components/ui/buttongrad';
 import Badge from '../components/ui/Badge';
 import { getTransactions } from '../services/transactionService';
 import { getNotifications, getLatestNotification } from '../services/notificationService';
+
 function BellDropdown({ onClose }) {
   const [notifications, setNotifications] = useState([]);
 
@@ -301,7 +302,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    fetchTransactions()
   }, []);
 
   const totalIncome  = transactions.filter(t => t?.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
