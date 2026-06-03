@@ -16,10 +16,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const NAV_ITEMS = [
-  { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard"    },
-  { to: "/transaksi", icon: ArrowLeftRight,     label: "Transaksi" },
-  { to: "/analitik",      icon: BarChart3,       label: "Analitik"      },
-  { to: "/settings",     icon: Settings,        label: "Pengaturan"     },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/transaksi", icon: ArrowLeftRight, label: "Transaksi" },
+  { to: "/analitik", icon: BarChart3, label: "Analitik" },
+  { to: "/settings", icon: Settings, label: "Pengaturan" },
 ];
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
@@ -32,9 +32,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   return (
     <aside className={`hidden lg:flex flex-col h-screen bg-white border-r border-gray-200 fixed left-0 top-0 z-30 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
-      
+
       {/* Toggle Button */}
-      <button 
+      <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-colors z-40"
       >
@@ -82,8 +82,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     "flex items-center rounded-xl text-sm font-medium transition-all duration-200",
                     isCollapsed ? "justify-center p-3" : "gap-3 px-4 py-3",
                     isActive
-                      ? "bg-purple-50 text-purple-600"       
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900", 
+                      ? "bg-purple-50 text-purple-600"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
                   ].join(" ")
                 }
                 title={isCollapsed ? label : ""}
@@ -109,9 +109,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         <button
           onClick={handleLogout}
           title={isCollapsed ? "Keluar" : ""}
-          className={`flex items-center rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors ${
-            isCollapsed ? "justify-center p-2 w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
-          }`}
+          className={`flex items-center rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors ${isCollapsed ? "justify-center p-2 w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
+            }`}
         >
           <LogOut size={isCollapsed ? 22 : 18} strokeWidth={1.75} className="flex-shrink-0" />
           {!isCollapsed && "Keluar"}

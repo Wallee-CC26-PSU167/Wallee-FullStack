@@ -13,7 +13,7 @@ export default function MobileNav() {
   const location = useLocation();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 px-2 pb-2">
+    <nav className="lg:hidden fixed bottom-6 left-6 right-6 z-50 bg-white/70 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/40 rounded-3xl px-2 pb-1 pt-1">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -23,7 +23,7 @@ export default function MobileNav() {
               <Link
                 key={item.path}
                 to={item.path}
-                className="-mt-6 p-3 rounded-2xl shadow-lg shadow-blue-500/30"
+                className="-mt-8 p-3 rounded-2xl shadow-lg shadow-blue-500/30"
                 style={{ background: "linear-gradient(135deg, #3975E6, #9E4CC6)" }}
               >
                 <item.icon className="w-6 h-6 text-white" />
@@ -37,7 +37,7 @@ export default function MobileNav() {
               to={item.path}
               className={[
                 "flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors",
-                isActive ? "text-blue-600" : "text-gray-400",
+                isActive ? "text-blue-600" : "text-gray-400 hover:text-gray-600",
               ].join(" ")}
             >
               <item.icon className="w-5 h-5" />
