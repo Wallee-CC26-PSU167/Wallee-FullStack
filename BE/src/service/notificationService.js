@@ -35,10 +35,6 @@ const generateDailyAnomaly = async (
   if (transactions.length === 0) {
     return [];
   }
-  console.log(
-    "RAW TRANSACTIONS:",
-    transactions
-  );
   const groupedTransactions = {};
   for (const row of transactions) {
     const frequencyResult = await db.query(
@@ -129,20 +125,20 @@ const generateDailyAnomaly = async (
     formattedTransactions
   );
   console.log("CALLING AI API...");
-//   const aiResponse = await axios.post(
-//     process.env.AI_ANOMALY_URL,
-//     formattedTransactions,
-//     {
-//       headers: {
-//         "Content-Type":
-//           "application/json"
-//       }
-//     }
-//   );
-//   console.log(
-//     "AI RESPONSE:",
-//     aiResponse.data
-//   );
+  const aiResponse = await axios.post(
+    process.env.AI_ANOMALY_URL,
+    formattedTransactions,
+    {
+      headers: {
+        "Content-Type":
+          "application/json"
+      }
+    }
+  );
+  console.log(
+    "AI RESPONSE:",
+    aiResponse.data
+  );
   const aiResults =
     aiResponse.data;
   for (const aiResult of aiResults) {
@@ -309,7 +305,9 @@ const dismissNotification = async (
     [itemId]
   );
 
-  await redis.del(`notifications:${userId}`);
+  const today = new Date().toISOString().split("T")[0];
+  const cacheKey = `anomaly-generated:${userId}:${today}`;
+  await redis.del(cacheKey);
   return true;
 };
 const getLatestUnreadNotification =

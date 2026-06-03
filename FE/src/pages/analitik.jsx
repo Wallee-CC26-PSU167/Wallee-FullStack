@@ -5,17 +5,9 @@ import { TrendingUp, TrendingDown, BarChart3, Sparkles, ArrowUpRight, ArrowDownR
 import Card from '../components/ui/card';
 import SelectFields from '../components/ui/select';
 import { getTransactions } from '../services/transactionService';
+import { getForecast } from '../services/forecastService';
 
 const COLORS = ['#3975E6', '#9E4CC6', '#34D399', '#F59E0B', '#EF4444', '#6366F1', '#EC4899', '#14B8A6'];
-
-// ── Dummy forecast — ganti dengan API call saat model siap ───
-const DUMMY_FORECAST = {
-  user_id: 123,
-  forecast_month: "2026-06",
-  predicted_expense: 3150000,
-  last_month_expense: 2900000,
-  change_percentage: 8.62,
-};
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('id-ID', {
@@ -112,6 +104,28 @@ function ForecastCard({ forecast }) {
           </div>
 
         </div>
+        {/* Confidence Section */}
+        <div className="mt-5 pt-4 border-t border-white/10">
+
+          <p className="text-white/50 text-[11px] uppercase tracking-wider mb-1 font-semibold">
+            Estimasi AI
+          </p>
+
+          <p className="text-sm font-bold text-white">
+            {formatCurrency(
+              forecast.confidence?.lower || 0
+            )}
+            {" - "}
+            {formatCurrency(
+              forecast.confidence?.upper || 0
+            )}
+          </p>
+
+          <p className="text-white/40 text-[10px] mt-2 leading-relaxed">
+            Berdasarkan pola pengeluaran historis pengguna
+          </p>
+
+        </div>
       </div>
     </motion.div>
   );
@@ -122,6 +136,8 @@ export default function Analytics() {
   const [period, setPeriod]         = useState('month');
   const [transactions, setTransactions] = useState([]);
   const [forecast, setForecast]     = useState(null);
+  const [loading, setLoading] =
+  useState(true);
 
   const fetchTransactions = async () => {
     try {
@@ -133,17 +149,17 @@ export default function Analytics() {
       console.log(error);
     }
   };
-
-  // Fetch forecast — ganti dummy dengan API saat model siap
-  const fetchForecast = async () => {
-    try {
-      // const res = await api.get("/ai/forecast");
-      // setForecast(res.data);
-      setForecast(DUMMY_FORECAST); // hapus baris ini saat API sudah siap
-    } catch (error) {
-      console.log(error);
-    }
-  };
+const fetchForecast = async () => {
+  try {
+    setLoading(true);
+    const res = await getForecast();
+    setForecast(res.data);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchTransactions();
@@ -221,7 +237,17 @@ export default function Analytics() {
       </div>
 
       {/* Forecast Card */}
-      {forecast && <ForecastCard forecast={forecast} />}
+      {
+        loading ? (
+          <div className="h-56 rounded-3xl animate-pulse bg-slate-200" />
+        ) : forecast ? (
+          <ForecastCard forecast={forecast} />
+        ) : (
+          <div>
+            Forecast unavailable
+          </div>
+        )
+      }
 
       {/* Bar Chart */}
       <Card className="p-6 border border-gray-100">

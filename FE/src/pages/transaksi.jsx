@@ -79,7 +79,7 @@ function AnomalyPopover({ notification, onClose, onDismissed }) {
       animate={{ opacity: 1, scale: 1,    y: 0  }}
       exit={{    opacity: 0, scale: 0.95, y: -4  }}
       transition={{ duration: 0.15 }}
-      className="absolute right-0 top-8 w-72 bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      className="absolute top-8 left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 w-[min(90vw,18rem)] bg-white rounded-2xl border border-gray-100 overflow-hidden"
       style={{ zIndex: 50, boxShadow: "0 8px 32px rgba(15,24,41,0.14)" }}
     >
       {/* Header */}
@@ -122,23 +122,42 @@ function AnomalyPopover({ notification, onClose, onDismissed }) {
                   {item.message}
                 </p>
 
-                {/* Metadata */}
-                {item.metadata && (
-                  <div className="bg-white/70 rounded-lg px-2.5 py-2 mb-2 space-y-0.5">
-                    {Object.entries(item.metadata).map(([k, v]) => (
-                      <div key={k} className="flex justify-between text-[11px]">
-                        <span className="text-gray-400 capitalize">
-                          {k.replace(/_/g, ' ')}
-                        </span>
-                        <span className="font-semibold text-gray-700">
-                          {typeof v === 'number' && k.includes('price')
-                            ? formatCurrency(v)
-                            : String(v)}
-                        </span>
+                {/* Metadata (skip for auto-encoder types) */}
+                {item.metadata && (() => {
+                  const anomalyType = (item.anomaly_type ?? item.type ?? '').toString().toLowerCase();
+                  const isAutoEncoder = anomalyType.includes('auto') && anomalyType.includes('encoder');
+                  if (isAutoEncoder) return null;
+
+                  let meta = item.metadata;
+                  try {
+                    if (typeof meta === 'string') meta = JSON.parse(meta);
+                  } catch (e) {
+                    // leave as-is if parse fails
+                  }
+
+                  if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+                    return (
+                      <div className="bg-white/70 rounded-lg px-2.5 py-2 mb-2 space-y-0.5">
+                        {Object.entries(meta).map(([k, v]) => (
+                          <div key={k} className="flex justify-between text-[11px]">
+                            <span className="text-gray-400 capitalize">{k.replace(/_/g, ' ')}</span>
+                            <span className="font-semibold text-gray-700">
+                              {typeof v === 'number' && String(k).toLowerCase().includes('price')
+                                ? formatCurrency(v)
+                                : (typeof v === 'object' ? JSON.stringify(v) : String(v))}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    );
+                  }
+
+                  return (
+                    <div className="bg-white/70 rounded-lg px-2.5 py-2 mb-2">
+                      <pre className="text-[11px] whitespace-pre-wrap">{typeof meta === 'string' ? meta : JSON.stringify(meta)}</pre>
+                    </div>
+                  );
+                })()}
 
                 {/* Tombol dismiss */}
                 <button
@@ -386,18 +405,26 @@ export default function Transactions() {
       const map = {};
       const list = data.data ?? data; // handle { data: [...] } atau [...]
       list.forEach(notif => {
-        map[notif.transaction_id] = notif;
+        // normalisasi shape: backend mengirim `id` (transaction id) dan `anomalies` array
+        const items = (notif.items ?? notif.anomalies ?? []).map(a => ({
+          id: a.id,
+          anomaly_type: a.anomaly_type ?? a.type,
+          message: a.message,
+          is_dismissed: a.is_dismissed ?? a.dismissed ?? false,
+          metadata: a.metadata ?? a.detail ?? null,
+        }));
+
+        const key = notif.transaction_id ?? notif.id ?? notif.transactionId;
+        map[key] = { ...notif, items };
       });
       setAnomalyMap(map);
     } catch (e) { console.log(e); }
   }, []);
-
   useEffect(() => {
     fetchTransactions();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAnomalies();
   }, [fetchTransactions, fetchAnomalies]);
-
   // ── Delete ──────────────────────────────────────────────────
   const handleDelete = async (id) => {
     try {

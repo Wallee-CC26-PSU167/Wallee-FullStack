@@ -66,7 +66,6 @@ const generateNotifications = async (
   req,
   res
 ) => {
-    console.log("Received request to generate notifications");
   try {
     const userId = req.user.id;
     const result =

@@ -434,8 +434,8 @@ export default function Dashboard() {
               transition={{ delay: i * 0.1 }}
               className="flex items-center gap-4 py-4 group border-b border-gray-200 last:border-0"
             >
-              <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0">
-                {"📦"}
+              <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-xl shrink-0">
+                {tx.type === 'expense' ? '🛍️' : '💰'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate text-slate-800">
