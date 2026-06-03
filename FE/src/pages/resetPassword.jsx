@@ -4,6 +4,7 @@ import 'aos/dist/aos.css';
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
+import { ParticlesBG } from "../components/ui/BackgroundStyles";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -68,12 +69,9 @@ export default function ResetPassword() {
   ].join(" ");
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] flex items-center justify-center p-4 sm:p-6 relative">
-      {/* Tombol Kembali ke Landing Page */}
-      <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-all duration-300 font-medium bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md hover:-translate-x-1 z-50">
-        <ArrowLeft size={18} />
-        <span className="hidden sm:inline">Kembali ke Beranda</span>
-      </Link>
+    <ParticlesBG>
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:p-6">
+
       <div 
         data-aos="zoom-in" data-aos-duration="600"
         className="w-full max-w-[480px] bg-white rounded-2xl overflow-hidden shadow-[0_8px_48px_rgba(15,24,41,0.12)] hover:shadow-[0_16px_60px_rgba(15,24,41,0.2)] transition-shadow duration-500 flex flex-col p-8 sm:p-12"
@@ -171,6 +169,7 @@ export default function ResetPassword() {
           </form>
         )}
       </div>
-    </div>
+      </div>
+    </ParticlesBG>
   );
 }
