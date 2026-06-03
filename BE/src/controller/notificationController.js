@@ -5,7 +5,6 @@ const getNotifications = async (req, res) => {
     const userId = req.user.id;
     const notifications =
       await notificationService.getNotifications(userId);
-
     return res.status(200).json({
       success: true,
       data: notifications
@@ -62,32 +61,9 @@ const dismissNotification = async (req, res) => {
     });
   }
 };
-const generateNotifications = async (
-  req,
-  res
-) => {
-  try {
-    const userId = req.user.id;
-    const result =
-      await notificationService
-        .generateDailyAnomaly(userId);
-    return res.status(200).json({
-      success: true,
-      message:
-        "Anomaly notifications generated",
-      data: result
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
 
 export default {
   getNotifications,
   saveNotification,
   dismissNotification,
-  generateNotifications,
 };

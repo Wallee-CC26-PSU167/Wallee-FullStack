@@ -25,7 +25,7 @@ const generateDailyAnomaly = async (
       LEFT JOIN kategori k
           ON k.id_kategori = dt.id_kategori
       WHERE t.id_user = $1
-      AND t.transaction_date = CURRENT_DATE
+      AND t.transaction_date = CURRENT_DATE - 1
       ORDER BY t.transaction_date DESC
       `,
       [userId]
@@ -89,7 +89,7 @@ const generateDailyAnomaly = async (
         time: row.time,
         item_count: 0,
         merchant_monthly_freq: Number(merchantFrequency.merchant_monthly_freq)||0,
-        merchant_avg_freq: Number(merchantFrequency.merchant_avg_freq)||null,
+        merchant_avg_freq: Number(merchantFrequency.merchant_avg_freq)||0,
         items: []
       };
     }
@@ -118,8 +118,8 @@ const generateDailyAnomaly = async (
   const formattedTransactions =
     Object.values(
       groupedTransactions
-
     );
+  console.log(" formatted transaksi : ", JSON.stringify(formattedTransactions, null, 2));
   console.log(
     "FORMATTED TRANSACTIONS:",
     formattedTransactions
@@ -149,15 +149,28 @@ const generateDailyAnomaly = async (
   }
   return aiResults;
 };
-
+async function handleDailyAiGeneration(userId) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const targetDate = yesterday.toISOString().split("T")[0];
+    const generateKey = `anomaly-generated:${userId}:${targetDate}`;
+    const alreadyGenerated = await redis.get(generateKey);
+    if (!alreadyGenerated) {
+        console.log(`GENERATING DAILY ANOMALY FOR USER ${userId}...`);
+        await generateDailyAnomaly(userId);
+        await redis.set(generateKey, "true", "EX", 86400);
+    } else {
+        console.log(`AI ALREADY GENERATED TODAY FOR USER ${userId}`);
+    }
+}
 const getNotifications = async (userId) => {
-  const today = new Date().toISOString().split("T")[0];
-  const cacheKey = `anomaly-generated:${userId}:${today}`;
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    return JSON.parse(cached);
-  }
-
+    await handleDailyAiGeneration(userId);
+    const today = new Date().toISOString().split("T")[0];
+    const cacheKey = `notifications:${userId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+        return JSON.parse(cached);
+    }
   const result = await db.query(
     `
     SELECT
@@ -178,12 +191,15 @@ const getNotifications = async (userId) => {
       ni.metadata
 
     FROM notifications n
-
     JOIN notification_items ni
       ON ni.notification_id = n.id
+    JOIN transaksi t
+      ON t.id_transaksi = n.transaction_id::bigint
+    WHERE t.id_user = $1
 
     ORDER BY n.created_at DESC
-    `
+    `,
+    [userId]
   );
   await redis.set(
     cacheKey,
@@ -198,10 +214,9 @@ const getNotifications = async (userId) => {
             id: row.transaction_id,
             merchant: row.merchant,
             amount: Number(row.amount),
-            date:
-                row.transaction_date
-                ?.toISOString()
-                ?.split("T")[0],
+            date: row.transaction_date
+                ? row.transaction_date.toLocaleDateString('en-CA')
+                : null,
             time: row.transaction_time,
             item_count: row.item_count,
             anomalies: []
@@ -304,10 +319,7 @@ const dismissNotification = async (
     `,
     [itemId]
   );
-
-  const today = new Date().toISOString().split("T")[0];
-  const cacheKey = `anomaly-generated:${userId}:${today}`;
-  await redis.del(cacheKey);
+  await redis.del(`notifications:${userId}`);
   return true;
 };
 const getLatestUnreadNotification =
@@ -334,9 +346,13 @@ const getLatestUnreadNotification =
     FROM notifications n
     JOIN notification_items ni
       ON ni.notification_id = n.id
-    WHERE ni.is_dismissed = false
+    JOIN transaksi t
+      ON t.id_transaksi = n.transaction_id::bigint
+    WHERE t.id_user = $1
+      AND ni.is_dismissed = false
     ORDER BY n.created_at DESC
-    `
+    `,
+    [userId]
   );
   if (result.rows.length === 0) {
     return null;
@@ -354,10 +370,9 @@ const getLatestUnreadNotification =
         id: row.transaction_id,
         merchant: row.merchant,
         amount: Number(row.amount),
-        date:
-          row.transaction_date
-            ?.toISOString()
-            ?.split("T")[0],
+        date: row.transaction_date
+          ? row.transaction_date.toLocaleDateString('en-CA')
+          : null,
         time: row.transaction_time,
         item_count: row.item_count,
         anomalies: []

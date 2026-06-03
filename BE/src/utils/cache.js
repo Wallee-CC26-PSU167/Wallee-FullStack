@@ -17,7 +17,7 @@ export const getCache = async (key) => {
 // ── Set ───────────────────────────────────────────────────────
 export const setCache = async (key, value, ttl = DEFAULT_TTL) => {
   try {
-    await redis.setEx(key, ttl, JSON.stringify(value));
+    await redis.set(key, JSON.stringify(value), "EX", ttl);
   } catch (err) {
     console.error("[Cache] setCache error:", err.message);
     // tidak throw — Redis error tidak boleh break aplikasi
