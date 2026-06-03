@@ -4,7 +4,6 @@ import 'aos/dist/aos.css';
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
-import { resetPasswordAPI } from "../services/auth_service";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -14,10 +13,10 @@ export default function ResetPassword() {
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
-    if (!token || !id) {
-      // Jika tidak ada token atau id di URL, kembalikan ke login
-      navigate("/login");
-    }
+    // Token dan id check dihilangkan untuk keperluan frontend-only
+    // if (!token || !id) {
+    //   navigate("/login");
+    // }
   }, [token, id, navigate]);
 
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
@@ -54,20 +53,11 @@ export default function ResetPassword() {
     setLoading(true);
     setApiErr("");
 
-    try {
-      await resetPasswordAPI({
-        id: id,
-        token,
-        newPassword: form.password
-      });
-      setSuccess(true);
-    } catch (err) {
-      const details = err.response?.data?.errors?.join(", ");
-      const msg = details || err.response?.data?.message || "Terjadi kesalahan. Link mungkin sudah kedaluwarsa.";
-      setApiErr(msg);
-    } finally {
+    // Simulate an API call with a short timeout since it's frontend-only
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSuccess(true);
+    }, 1500);
   }
 
   const inputClass = (field) => [

@@ -4,7 +4,6 @@ import 'aos/dist/aos.css';
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
-import { forgotPasswordAPI } from "../services/auth_service";
 
 export default function ForgotPassword() {
   useEffect(() => {
@@ -33,14 +32,11 @@ export default function ForgotPassword() {
     setApiErr("");
     setSuccess(false);
 
-    try {
-      await forgotPasswordAPI(email);
-      setSuccess(true);
-    } catch (err) {
-      setApiErr(err.response?.data?.message ?? "Terjadi kesalahan. Coba lagi.");
-    } finally {
+    // Simulate an API call with a short timeout since it's frontend-only
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSuccess(true);
+    }, 1500);
   }
 
   const inputClass = 
@@ -71,10 +67,13 @@ export default function ForgotPassword() {
         {success ? (
           <div className="text-center p-5 bg-green-50 border border-green-200 rounded-xl mb-6">
             <Mail className="w-10 h-10 text-green-500 mx-auto mb-3" />
-            <h3 className="text-green-800 font-bold mb-1">Cek Email Kamu</h3>
-            <p className="text-sm text-green-600">
-              Link untuk mereset password telah dikirim ke <b>{email}</b>. Link tersebut berlaku selama 15 menit.
+            <h3 className="text-green-800 font-bold mb-1">Simulasi Berhasil!</h3>
+            <p className="text-sm text-green-600 mb-4">
+              (Frontend-only) Karena simulasi, tidak ada email asli yang dikirim ke <b>{email}</b>. Silakan langsung menuju ke halaman Reset Password.
             </p>
+            <Link to="/reset-password" className="inline-block px-6 py-2.5 bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+              Ke Halaman Reset Password
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
