@@ -20,14 +20,18 @@ export default function MobileNav() {
 
           if (item.isCenter) {
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="-mt-8 p-3 rounded-2xl shadow-lg shadow-blue-500/30"
-                style={{ background: "linear-gradient(135deg, #3975E6, #9E4CC6)" }}
-              >
-                <item.icon className="w-6 h-6 text-white" />
-              </Link>
+              <div key={item.path} className="relative -mt-10 flex items-center justify-center">
+                {/* Fake cutout background properly centered */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] bg-slate-50 rounded-[28px] z-0" />
+                
+                <Link
+                  to={item.path}
+                  className="relative z-10 w-12 h-12 flex items-center justify-center rounded-2xl shadow-lg shadow-blue-500/40"
+                  style={{ background: "linear-gradient(135deg, #3975E6, #9E4CC6)" }}
+                >
+                  <item.icon className="w-6 h-6 text-white" />
+                </Link>
+              </div>
             );
           }
 
@@ -36,7 +40,7 @@ export default function MobileNav() {
               key={item.path}
               to={item.path}
               className={[
-                "flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors",
+                "relative z-10 flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors",
                 isActive ? "text-blue-600" : "text-gray-400 hover:text-gray-600",
               ].join(" ")}
             >

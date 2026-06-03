@@ -8,7 +8,7 @@ const Layout = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-background relative pb-28 lg:pb-0">
+        <div className="min-h-screen bg-slate-50 relative">
             {/* Mobile Overlay */}
             {isMobileOpen && (
                 <div 
@@ -24,7 +24,7 @@ const Layout = () => {
                 setIsMobileOpen={setIsMobileOpen}
             />
             
-            <main className={`transition-all duration-300 min-h-screen bg-slate-50 ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+            <main className={`transition-all duration-300 min-h-screen pb-28 lg:pb-0 ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
                 <Outlet />
             </main>
             
