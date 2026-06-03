@@ -42,7 +42,6 @@ const getForecast = async (
       await forecastRepo.getLastMonthExpense(
         userId
       );
-      console.log("data bulan terakhir", lastMonthExpense);
     const forecast =
       forecastAdapter.adaptForecastResponse({
         aiResponse,
