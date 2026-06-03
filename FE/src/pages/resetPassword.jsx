@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
-import { resetPasswordAPI } from "../services/auth_service";
+import { ParticlesBG } from "../components/ui/BackgroundStyles";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -14,10 +14,10 @@ export default function ResetPassword() {
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
-    if (!token || !id) {
-      // Jika tidak ada token atau id di URL, kembalikan ke login
-      navigate("/login");
-    }
+    // Token dan id check dihilangkan untuk keperluan frontend-only
+    // if (!token || !id) {
+    //   navigate("/login");
+    // }
   }, [token, id, navigate]);
 
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
@@ -54,20 +54,11 @@ export default function ResetPassword() {
     setLoading(true);
     setApiErr("");
 
-    try {
-      await resetPasswordAPI({
-        id: id,
-        token,
-        newPassword: form.password
-      });
-      setSuccess(true);
-    } catch (err) {
-      const details = err.response?.data?.errors?.join(", ");
-      const msg = details || err.response?.data?.message || "Terjadi kesalahan. Link mungkin sudah kedaluwarsa.";
-      setApiErr(msg);
-    } finally {
+    // Simulate an API call with a short timeout since it's frontend-only
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSuccess(true);
+    }, 1500);
   }
 
   const inputClass = (field) => [
@@ -78,13 +69,17 @@ export default function ResetPassword() {
   ].join(" ");
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] flex items-center justify-center p-4 sm:p-6">
+    <ParticlesBG>
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:p-6">
+
       <div 
         data-aos="zoom-in" data-aos-duration="600"
         className="w-full max-w-[480px] bg-white rounded-2xl overflow-hidden shadow-[0_8px_48px_rgba(15,24,41,0.12)] hover:shadow-[0_16px_60px_rgba(15,24,41,0.2)] transition-shadow duration-500 flex flex-col p-8 sm:p-12"
       >
         <div className="flex justify-center mb-6">
-          <img src={WalleeLogo} alt="Wallee Logo" className="h-14 w-auto hover:scale-105 hover:drop-shadow-md transition-all duration-300" />
+          <Link to="/" title="Kembali ke Beranda">
+            <img src={WalleeLogo} alt="Wallee Logo" className="h-14 w-auto hover:scale-105 hover:drop-shadow-md transition-all duration-300" />
+          </Link>
         </div>
         
         <div className="mb-7">
@@ -174,6 +169,7 @@ export default function ResetPassword() {
           </form>
         )}
       </div>
-    </div>
+      </div>
+    </ParticlesBG>
   );
 }

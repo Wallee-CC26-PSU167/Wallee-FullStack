@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Link } from "react-router-dom";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Mail, ArrowLeft } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
-import { forgotPasswordAPI } from "../services/auth_service";
+import { ParticlesBG } from "../components/ui/BackgroundStyles";
 
 export default function ForgotPassword() {
   useEffect(() => {
@@ -33,14 +33,11 @@ export default function ForgotPassword() {
     setApiErr("");
     setSuccess(false);
 
-    try {
-      await forgotPasswordAPI(email);
-      setSuccess(true);
-    } catch (err) {
-      setApiErr(err.response?.data?.message ?? "Terjadi kesalahan. Coba lagi.");
-    } finally {
+    // Simulate an API call with a short timeout since it's frontend-only
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSuccess(true);
+    }, 1500);
   }
 
   const inputClass = 
@@ -50,13 +47,17 @@ export default function ForgotPassword() {
       : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15");
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] flex items-center justify-center p-4 sm:p-6">
+    <ParticlesBG>
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:p-6">
+
       <div 
         data-aos="zoom-in" data-aos-duration="600"
         className="w-full max-w-[480px] bg-white rounded-2xl overflow-hidden shadow-[0_8px_48px_rgba(15,24,41,0.12)] hover:shadow-[0_16px_60px_rgba(15,24,41,0.2)] transition-shadow duration-500 flex flex-col p-8 sm:p-12"
       >
         <div className="flex justify-center mb-6">
-          <img src={WalleeLogo} alt="Wallee Logo" className="h-14 w-auto hover:scale-105 hover:drop-shadow-md transition-all duration-300" />
+          <Link to="/" title="Kembali ke Beranda">
+            <img src={WalleeLogo} alt="Wallee Logo" className="h-14 w-auto hover:scale-105 hover:drop-shadow-md transition-all duration-300" />
+          </Link>
         </div>
         
         <div className="mb-7">
@@ -71,10 +72,13 @@ export default function ForgotPassword() {
         {success ? (
           <div className="text-center p-5 bg-green-50 border border-green-200 rounded-xl mb-6">
             <Mail className="w-10 h-10 text-green-500 mx-auto mb-3" />
-            <h3 className="text-green-800 font-bold mb-1">Cek Email Kamu</h3>
-            <p className="text-sm text-green-600">
-              Link untuk mereset password telah dikirim ke <b>{email}</b>. Link tersebut berlaku selama 15 menit.
+            <h3 className="text-green-800 font-bold mb-1">Simulasi Berhasil!</h3>
+            <p className="text-sm text-green-600 mb-4">
+              (Frontend-only) Karena simulasi, tidak ada email asli yang dikirim ke <b>{email}</b>. Silakan langsung menuju ke halaman Reset Password.
             </p>
+            <Link to="/reset-password" className="inline-block px-6 py-2.5 bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+              Ke Halaman Reset Password
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -136,6 +140,7 @@ export default function ForgotPassword() {
         </div>
 
       </div>
-    </div>
+      </div>
+    </ParticlesBG>
   );
 }

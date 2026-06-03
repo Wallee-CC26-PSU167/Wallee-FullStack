@@ -4,7 +4,15 @@ import { Wallet, User } from 'lucide-react';
 
 export default function Header() {
     return (
-        <header className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <header className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 animate-[fade-down_0.8s_ease-out]">
+            <style>
+              {`
+                @keyframes fade-down {
+                  0% { opacity: 0; transform: translateY(-20px); }
+                  100% { opacity: 1; transform: translateY(0); }
+                }
+              `}
+            </style>
             <div className="bg-white/30 backdrop-blur-lg shadow-sm border border-white/40 rounded-2xl px-6 lg:px-8">
                 <div className="flex justify-between items-center h-[72px]">
                     {/* Logo */}

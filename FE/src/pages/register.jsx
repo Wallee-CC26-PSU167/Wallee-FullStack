@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Receipt, Bot, LineChart, PieChart } from "lucide-react";
+import { ArrowRight, Receipt, Bot, LineChart, PieChart, ArrowLeft } from "lucide-react";
 import WalleeLogo from "../assets/Logo_Full.png";
 import Card from "../components/ui/card";
 import ButtonGrad from "../components/ui/buttongrad";
 import InputFields from "../components/ui/input";
 import { registerUser } from "../services/auth_service";
+import { ParticlesBG } from "../components/ui/BackgroundStyles";
 
 const FEATURES = [
   { Icon: Receipt,    label: "Kelola Transaksi" },
@@ -54,10 +55,14 @@ export default function Register() {
     setLoading(true);
     setApiErr("");
     try {
-      const response = await registerUser(form);
-      navigate("/dashboard");
+      const response = await registerUser({
+        nama: form.name,
+        email: form.email,
+        password: form.password
+      });
+      navigate("/login");
     } catch (err) {
-      setApiErr(err.message ?? "Registrasi gagal. Coba lagi.");
+      setApiErr(err.response?.data?.message || err.message || "Registrasi gagal. Coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -71,10 +76,20 @@ export default function Register() {
   ].join(" ");
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] flex items-center justify-center p-4 sm:p-6">
+    <ParticlesBG>
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:p-6">
+        {/* Tombol Kembali ke Landing Page */}
+        <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 group rounded-full p-[2px] bg-gradient-to-r from-blue-500 to-purple-500 transition-all hover:shadow-md hover:shadow-purple-500/20 hover:-translate-x-1 active:scale-95 flex items-center justify-center z-50">
+          <div className="bg-white group-hover:bg-transparent transition-all duration-300 rounded-full px-4 py-1.5 flex items-center gap-2 justify-center">
+            <ArrowLeft size={18} className="text-blue-500 group-hover:text-white transition-all duration-300" />
+            <span className="hidden sm:inline text-[15px] font-medium bg-gradient-to-r from-blue-500 to-purple-500 group-hover:from-white group-hover:to-white bg-clip-text text-transparent transition-all duration-300">
+              Kembali ke Beranda
+            </span>
+          </div>
+        </Link>
       <div 
         data-aos="zoom-in" data-aos-duration="600"
-        className="w-full max-w-[880px] bg-white rounded-2xl overflow-hidden shadow-[0_8px_48px_rgba(15,24,41,0.12)] hover:shadow-[0_16px_60px_rgba(15,24,41,0.2)] transition-shadow duration-500 flex"
+        className="w-full max-w-[880px] bg-white rounded-2xl overflow-hidden shadow-[0_8px_48px_rgba(15,24,41,0.12)] hover:shadow-[0_16px_60px_rgba(15,24,41,0.2)] transition-all duration-500 flex relative z-10"
       >
 
         <div className="hidden lg:flex flex-col w-[42%] flex-shrink-0 p-9 relative overflow-hidden"
@@ -116,7 +131,9 @@ export default function Register() {
           <div className="w-full max-w-[340px]">
 
             <div className="flex justify-center mb-6">
+              <Link to="/" title="Kembali ke Beranda">
                 <img src={WalleeLogo} alt="Wallee Logo" className="h-16 w-auto hover:scale-105 hover:drop-shadow-md transition-all duration-300" />
+              </Link>
             </div>
 
             <div className="mb-7">
@@ -129,6 +146,11 @@ export default function Register() {
             </div>
             
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {apiErr && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-[10px] text-sm text-center">
+                  {apiErr}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -220,8 +242,8 @@ export default function Register() {
 
           </div>
         </div>
-
+        </div>
       </div>
-    </div>
+    </ParticlesBG>
   );
 }

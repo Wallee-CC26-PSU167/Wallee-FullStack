@@ -4,13 +4,14 @@ import 'aos/dist/aos.css';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LineChart, Sparkles, PieChart, Bot, Star, Receipt } from 'lucide-react';
 import maskotWallee from '../assets/Maskot Wallee.png';
+import { ParticlesBG } from '../components/ui/BackgroundStyles';
 
 import Header from '../components/layout/header';
 import Footer from '../components/layout/footer';
 
 export function HomeSection() {
   return (
-    <div id="home" className="flex flex-col justify-center bg-white w-full min-h-screen pt-20 pb-24">
+    <section className="w-full pt-20 pb-24" id="home">
 
       <section className="px-6 md:px-12 lg:px-24 max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 mb-24">
@@ -42,7 +43,7 @@ export function HomeSection() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up" data-aos-delay="300">
           {/* Stat 1 */}
-          <div className="bg-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-4xl font-bold text-slate-900 mb-3 font-serif tracking-tight">1 dari 3</h3>
             <p className="text-gray-600 text-sm leading-relaxed font-medium">
               orang Indonesia tidak punya tabungan darurat
@@ -50,7 +51,7 @@ export function HomeSection() {
           </div>
 
           {/* Stat 2 */}
-          <div className="bg-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-4xl font-bold text-slate-900 mb-3 font-serif tracking-tight">68%</h3>
             <p className="text-gray-600 text-sm leading-relaxed font-medium">
               keluarga tidak pernah merencanakan keuangan
@@ -58,7 +59,7 @@ export function HomeSection() {
           </div>
 
           {/* Stat 3 */}
-          <div className="bg-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-4xl font-bold text-slate-900 mb-3 font-serif tracking-tight">Rp 0</h3>
             <p className="text-gray-600 text-sm leading-relaxed font-medium">
               yang disisihkan oleh rata-rata pekerja muda
@@ -67,13 +68,13 @@ export function HomeSection() {
         </div>
       </section>
 
-    </div>
+    </section>
   );
 }
 
 export function Feature() {
   return (
-    <section id="feature" className="bg-white text-left pt-25 pb-24 px-4 w-full">
+    <section id="feature" className="bg-transparent text-left pt-25 pb-24 px-4 w-full relative z-10">
       <div className="max-w-5xl mx-auto text-left mb-12" data-aos="fade-up">
         <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">
           FITUR
@@ -163,7 +164,7 @@ const extendedTestimonials = [...testimonials, ...testimonials, ...testimonials,
 
 export function Testimoni() {
   return (
-    <section id="testimoni" className="bg-white text-center py-24 w-full overflow-hidden">
+    <section id="testimoni" className="bg-transparent text-center py-24 w-full overflow-hidden relative z-10">
       <style>
         {`
           @keyframes scroll-left {
@@ -330,7 +331,7 @@ export function Testimoni() {
 
 export function AboutSection() {
   return (
-    <section id="about" data-aos="fade-up" className="w-full bg-white py-24">
+    <section id="about" data-aos="fade-up" className="w-full bg-transparent py-24 relative z-10">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 text-center">
         <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">
           TANTANGAN FINANSIAL
@@ -407,13 +408,13 @@ export default function Home() {
 
   return (
     <>
-      <Header />
-      <div className="w-full min-h-screen bg-slate-50 overflow-x-hidden font-sans">
+      <ParticlesBG className="w-full min-h-screen font-sans">
+        <Header />
         <HomeSection />
         <AboutSection />
         <Feature />
         <Testimoni />
-      </div>
+      </ParticlesBG>
       <Footer />
     </>
   );

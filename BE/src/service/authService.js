@@ -2,6 +2,7 @@ import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 const register = async ({ nama, email, password }) => {
   // cek user sudah ada
@@ -16,13 +17,13 @@ const register = async ({ nama, email, password }) => {
 
   // hash password
   const hashedPassword = await bcrypt.hash(password, 10);
+  const idUser = crypto.randomBytes(5).toString("hex");
 
-  // insert user
   const result = await pool.query(
-    `INSERT INTO users (nama, email, password_hash)
-     VALUES ($1, $2, $3)
+    `INSERT INTO users (id_user, nama, email, password)
+     VALUES ($1, $2, $3, $4)
      RETURNING id_user, nama, email`,
-    [nama, email, hashedPassword]
+    [idUser, nama, email, hashedPassword]
   );
 
   return result.rows[0];
@@ -68,14 +69,14 @@ const forgotPassword = async ({ email }) => {
 
   // Membuat token sekali pakai dengan secret yang gabungan dari JWT_SECRET + password lama user.
   // Jika password diubah, token ini otomatis tidak valid.
-  const secret = process.env.JWT_SECRET + user.password_hash;
-  const token = jwt.sign({ id: user.id, email: user.email }, secret, {
+  const secret = process.env.JWT_SECRET + user.password;
+  const token = jwt.sign({ id: user.id_user, email: user.email }, secret, {
     expiresIn: "15m", // Token kedaluwarsa dalam 15 menit
   });
 
   // Mengambil URL Frontend dari .env, atau gunakan localhost jika belum diatur
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-  const link = `${frontendUrl}/reset-password?id=${user.id}&token=${token}`;
+  const link = `${frontendUrl}/reset-password?id=${user.id_user}&token=${token}`;
 
   // Menggunakan Nodemailer dengan Gmail SMTP
   const transporter = nodemailer.createTransport({
@@ -91,7 +92,7 @@ const forgotPassword = async ({ email }) => {
     to: user.email,
     subject: "Reset Password Wallee",
     html: `
-      <h2>Halo, ${user.name}</h2>
+      <h2>Halo, ${user.nama}</h2>
       <p>Kamu menerima email ini karena ada permintaan untuk mereset password akun Wallee kamu.</p>
       <p>Silakan klik link di bawah ini untuk mereset password. Link ini hanya berlaku selama 15 menit.</p>
       <a href="${link}" style="display:inline-block; padding:10px 20px; background-color:#818cf8; color:#fff; text-decoration:none; border-radius:5px;">Reset Password Sekarang</a>
@@ -104,14 +105,14 @@ const forgotPassword = async ({ email }) => {
 };
 
 const resetPassword = async ({ id, token, newPassword }) => {
-  const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+  const result = await pool.query("SELECT * FROM users WHERE id_user = $1", [id]);
   const user = result.rows[0];
 
   if (!user) {
     throw new Error("User not found");
   }
 
-  const secret = process.env.JWT_SECRET + user.password_hash;
+  const secret = process.env.JWT_SECRET + user.password;
   
   try {
     // Memverifikasi apakah token masih valid dan belum digunakan
@@ -123,7 +124,7 @@ const resetPassword = async ({ id, token, newPassword }) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   
   await pool.query(
-    "UPDATE users SET password_hash = $1 WHERE id = $2",
+    "UPDATE users SET password = $1 WHERE id_user = $2",
     [hashedPassword, id]
   );
 
