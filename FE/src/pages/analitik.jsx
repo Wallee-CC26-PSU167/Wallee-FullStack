@@ -187,11 +187,15 @@ const fetchForecast = async () => {
   const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
 
   const categoryData = Object.entries(
-    filtered.filter(t => t.type === 'expense').reduce((acc, t) => {
-      const name = t.items?.[0]?.category?.name || "Lainnya";
-      acc[name] = (acc[name] || 0) + parseFloat(t.amount);
-      return acc;
-    }, {})
+    filtered
+      .filter(t => t.type === 'expense')
+      .flatMap(t => t.items || [])
+      .reduce((acc, item) => {
+        const name = item.category?.name || "Lainnya";
+        const value = parseFloat(item.subtotal ?? 0);
+        acc[name] = (acc[name] || 0) + value;
+        return acc;
+      }, {})
   )
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
