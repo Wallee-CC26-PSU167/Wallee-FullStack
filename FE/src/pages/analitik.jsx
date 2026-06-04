@@ -168,7 +168,7 @@ const fetchForecast = async () => {
   }, []);
 
   const now = new Date();
-  now.setFullYear(now.getFullYear() - 1);
+  now.setFullYear(now.getFullYear());
   const filtered = transactions.filter(tx => {
     if (!tx.date) return false;
     const d = new Date(tx.date);
