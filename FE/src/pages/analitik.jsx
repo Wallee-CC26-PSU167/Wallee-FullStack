@@ -52,7 +52,7 @@ function ForecastCard({ forecast }) {
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <p className="text-white/80 text-sm font-medium">
-              Prediksi Pengeluaran AI
+              Prediksi Pengeluaran Bulan Ini
             </p>
           </div>
           <span className="text-xs text-white/60 bg-white/10 px-2.5 py-1 rounded-full">
@@ -99,7 +99,7 @@ function ForecastCard({ forecast }) {
           {/* Info label */}
           <div className="ml-auto text-right">
             <p className="text-white/40 text-[10px] leading-tight max-w-[100px]">
-              Berdasarkan pola pengeluaran historis
+              Estimasi total pengeluaran hingga akhir bulan
             </p>
           </div>
 

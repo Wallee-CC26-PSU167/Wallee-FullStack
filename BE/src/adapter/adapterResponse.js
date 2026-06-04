@@ -5,7 +5,7 @@ const adaptForecastResponse = ({
 
   const predictedExpense =
     Number(
-      aiResponse.forecast_next_month || 0
+      aiResponse.forecast_this_month || 0
     );
 
   let changePercentage = 0;
