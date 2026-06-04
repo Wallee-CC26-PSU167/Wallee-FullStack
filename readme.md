@@ -1,6 +1,6 @@
 # 💰 Wallee — Aplikasi Manajemen Keuangan Pribadi
 
-Wallee adalah aplikasi web manajemen keuangan pribadi yang dilengkapi fitur AI untuk deteksi anomali transaksi dan forecasting pengeluaran bulan depan.
+Wallee adalah aplikasi web manajemen keuangan pribadi yang dilengkapi fitur AI untuk deteksi anomali transaksi dan prediksi pengeluaran
 
 ---
 
@@ -23,7 +23,7 @@ wallee/
 - **Analitik** — Chart pengeluaran bulan ini / bulan lalu
 - **Pengaturan** — Ubah username, email, dan password
 - **AI Anomaly Detection** — Deteksi otomatis transaksi mencurigakan dari transaksi kemarin
-- **AI Forecasting** — Prediksi pengeluaran di masa depan berdasarkan histori transaksi
+- **AI Forecasting** — Prediksi pengeluaran berdasarkan histori transaksi
 
 ---
 
@@ -172,7 +172,7 @@ App berjalan di `http://localhost:5173`
 ### Forecast — `/api/ai/forecast` *(Auth required)*
 | Method | Endpoint | Deskripsi |
 |---|---|---|
-| GET | `/` | Prediksi pengeluaran di masa depan |
+| GET | `/` | Prediksi pengeluaran |
 
 ---
 
