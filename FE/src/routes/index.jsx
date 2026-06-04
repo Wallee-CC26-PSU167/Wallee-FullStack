@@ -14,12 +14,20 @@ import ChangePassword from "../pages/changePassword";
 
 import Layout from "../components/layout/layout";
 import ProtectedRoute from "./protectedRoute";
+import PublicRoute from "./publicRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
