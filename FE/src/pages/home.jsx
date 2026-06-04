@@ -342,7 +342,7 @@ export function AboutSection() {
         </h2>
         <p className="text-lg text-gray-500 max-w-3xl mx-auto leading-relaxed">
           Tidak semua orang punya akses ke konsultan finansial mahal. Akibatnya, banyak yang baru
-          sadar kesalahan mereka ketika sudah terlambat — hutang menumpuk, tabungan nol, dan
+          sadar kesalahan mereka ketika sudah terlambat, hutang menumpuk, tabungan nol, dan
           masa depan terancam.
         </p>
 
@@ -356,7 +356,7 @@ export function AboutSection() {
               Demokratisasi kecerdasan finansial untuk semua orang Indonesia.
             </h3>
             <p className="text-gray-600 text-lg mb-10 leading-relaxed">
-              Wallee hadir sebagai teman finansial yang paling dekat, paling jujur, dan paling cocok denganmu — bukan hanya untuk orang kaya.
+              Wallee hadir sebagai teman finansial yang paling dekat, paling jujur, dan paling cocok denganmu, bukan hanya untuk orang kaya.
             </p>
             <Link to="/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium px-6 py-3 rounded-full transition-all hover:shadow-lg hover:-translate-y-0.5">
               Coba Sekarang <ArrowRight size={18} />
