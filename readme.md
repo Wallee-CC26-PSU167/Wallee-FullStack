@@ -4,16 +4,6 @@ Wallee adalah aplikasi web manajemen keuangan pribadi yang dilengkapi fitur AI u
 
 ---
 
-## 🗂️ Struktur Project
-
-```
-wallee/
-├── BE/   → Backend (Node.js + Express + PostgreSQL + Redis)
-└── FE/   → Frontend (React + Vite + Tailwind CSS)
-```
-
----
-
 ## ✨ Fitur Utama
 
 - **Autentikasi** — Register, Login, Lupa Password, Reset Password
