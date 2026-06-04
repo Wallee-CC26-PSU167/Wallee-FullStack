@@ -20,10 +20,10 @@ wallee/
 - **Dashboard** — Ringkasan saldo, pemasukan & pengeluaran, notifikasi anomali, bell dropdown notifikasi
 - **Transaksi** — CRUD transaksi (pemasukan & pengeluaran), search, filter kategori & tipe, detail anomali per transaksi
 - **Tambah Transaksi** — Form pemasukan (amount + kategori) dan pengeluaran (multi-item dengan nama, qty, harga, kategori)
-- **Analitik** — Chart pengeluaran bulan ini / bulan lalu, forecasting pengeluaran bulan depan via AI
+- **Analitik** — Chart pengeluaran bulan ini / bulan lalu
 - **Pengaturan** — Ubah username, email, dan password
 - **AI Anomaly Detection** — Deteksi otomatis transaksi mencurigakan dari transaksi kemarin
-- **AI Forecasting** — Prediksi pengeluaran bulan depan berdasarkan histori transaksi
+- **AI Forecasting** — Prediksi pengeluaran di masa depan berdasarkan histori transaksi
 
 ---
 
@@ -172,7 +172,7 @@ App berjalan di `http://localhost:5173`
 ### Forecast — `/api/ai/forecast` *(Auth required)*
 | Method | Endpoint | Deskripsi |
 |---|---|---|
-| GET | `/` | Prediksi pengeluaran bulan depan |
+| GET | `/` | Prediksi pengeluaran di masa depan |
 
 ---
 
