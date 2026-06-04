@@ -102,7 +102,6 @@ const getAnalyticsTransactions = async (
       await service.getAnalyticsTransactions(
         req.user.id
       );
-
     return res.status(200).json({
       success: true,
       message:

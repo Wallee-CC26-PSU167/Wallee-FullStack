@@ -168,18 +168,17 @@ const fetchForecast = async () => {
   }, []);
 
   const now = new Date();
-  const yearAgo = new Date();
-  yearAgo.setFullYear(now.getFullYear() - 1);
+  now.setFullYear(now.getFullYear() - 1);
   const filtered = transactions.filter(tx => {
     if (!tx.date) return false;
     const d = new Date(tx.date);
     if (period === 'month') {
-      return d.getMonth() === yearAgo.getMonth() && d.getFullYear() === yearAgo.getFullYear();
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }
     if (period === 'month_ago') {
-      const monthAgo = new Date(yearAgo);
+      const monthAgo = new Date(now);
       monthAgo.setMonth(monthAgo.getMonth() - 1);
-      return d >= monthAgo && d < yearAgo;
+      return d >= monthAgo && d < now;
     }
     return true;
   });

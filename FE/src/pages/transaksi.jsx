@@ -134,7 +134,6 @@ function AnomalyPopover({ notification, onClose, onDismissed }) {
                   } catch (e) {
                     // leave as-is if parse fails
                   }
-
                   if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
                     return (
                       <div className="bg-white/70 rounded-lg px-2.5 py-2 mb-2 space-y-0.5">

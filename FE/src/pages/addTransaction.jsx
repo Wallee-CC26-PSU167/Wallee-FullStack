@@ -183,15 +183,24 @@ export default function AddTransaction() {
           {/* ── EXPENSE FORM ── */}
           {type === 'expense' && (
             <>
-              {/* Nama transaksi */}
               <div>
-                <Label>Nama transaksi</Label>
+                <Label>Nama toko</Label>
                 <InputFields
                   type="text"
-                  placeholder="cth. Makan siang, Belanja Alfamart"
+                  placeholder="cth. Alfamart, Warung Bu Sari"
                   value={expenseForm.description}
                   onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))}
                   required
+                />
+              </div>
+              <div>
+                <Label>Nama transaksi</Label>
+                <textarea
+                  placeholder="cth. Makan siang, Belanja bulanan"
+                  value={expenseForm.note}
+                  onChange={e => setExpenseForm(p => ({ ...p, note: e.target.value }))}
+                  rows={3}
+                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all resize-none"
                 />
               </div>
 
@@ -330,18 +339,6 @@ export default function AddTransaction() {
                   {formatCurrency(total)}
                 </span>
               </div>
-
-              {/* Catatan */}
-              <div>
-                <Label>Catatan (opsional)</Label>
-                <textarea
-                  placeholder="Tambahkan catatan..."
-                  value={expenseForm.note}
-                  onChange={e => setExpenseForm(p => ({ ...p, note: e.target.value }))}
-                  rows={3}
-                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all resize-none"
-                />
-              </div>
             </>
           )}
 
@@ -350,13 +347,23 @@ export default function AddTransaction() {
             <>
               {/* Deskripsi */}
               <div>
-                <Label>Nama transaksi</Label>
+                <Label>Nama toko</Label>
                 <InputFields
                   type="text"
-                  placeholder="cth. Gaji bulanan, Freelance"
-                  value={incomeForm.description}
-                  onChange={e => setIncomeForm(p => ({ ...p, description: e.target.value }))}
+                  placeholder="cth. Alfamart, Warung Bu Sari"
+                  value={expenseForm.description}
+                  onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))}
                   required
+                />
+              </div>
+              <div>
+                <Label>Nama transaksi</Label>
+                <textarea
+                  placeholder="cth. Makan siang, Belanja bulanan"
+                  value={expenseForm.note}
+                  onChange={e => setExpenseForm(p => ({ ...p, note: e.target.value }))}
+                  rows={3}
+                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all resize-none"
                 />
               </div>
 
@@ -408,18 +415,6 @@ export default function AddTransaction() {
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </SelectFields>
-              </div>
-
-              {/* Catatan */}
-              <div>
-                <Label>Catatan (opsional)</Label>
-                <textarea
-                  placeholder="Tambahkan catatan..."
-                  value={incomeForm.note}
-                  onChange={e => setIncomeForm(p => ({ ...p, note: e.target.value }))}
-                  rows={3}
-                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all resize-none"
-                />
               </div>
             </>
           )}

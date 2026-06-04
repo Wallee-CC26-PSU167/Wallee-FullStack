@@ -420,7 +420,7 @@ export default function Dashboard() {
       <Card>
         <div className="flex items-center justify-between p-5 pb-3">
           <h3 className="font-bold text-[hsl(225,20%,12%)]">Transaksi Terakhir</h3>
-          <Link to="/transactions" className="text-xs text-blue-500 font-semibold flex items-center gap-1 hover:underline">
+          <Link to="/transaksi" className="text-xs text-blue-500 font-semibold flex items-center gap-1 hover:underline">
             Lihat Semua <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
