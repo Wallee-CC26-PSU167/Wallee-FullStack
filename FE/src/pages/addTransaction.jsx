@@ -347,23 +347,13 @@ export default function AddTransaction() {
             <>
               {/* Deskripsi */}
               <div>
-                <Label>Nama toko</Label>
+                <Label>Nama transaksi</Label>
                 <InputFields
                   type="text"
                   placeholder="cth. Alfamart, Warung Bu Sari"
                   value={expenseForm.description}
                   onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))}
                   required
-                />
-              </div>
-              <div>
-                <Label>Nama transaksi</Label>
-                <textarea
-                  placeholder="cth. Makan siang, Belanja bulanan"
-                  value={expenseForm.note}
-                  onChange={e => setExpenseForm(p => ({ ...p, note: e.target.value }))}
-                  rows={3}
-                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all resize-none"
                 />
               </div>
 
